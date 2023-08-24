@@ -12,12 +12,16 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
+#if UNITY
 using UnityEngine;
+#endif
 
 namespace Luna.Core.Dispatch
 {
     public class DispatchQueue
+#if UNITY
         : MonoBehaviour
+#endif
     {
 
 #region Singleton
@@ -55,6 +59,7 @@ namespace Luna.Core.Dispatch
             }
         }
 
+#if UNITY
         /// <summary>
         /// Initialize main queue before scene load.
         /// </summary>
@@ -68,6 +73,7 @@ namespace Luna.Core.Dispatch
                 DontDestroyOnLoad(main.gameObject);
             }
         }
+#endif
 
 #endregion
 
