@@ -1,0 +1,36 @@
+{
+    "name": "Unilities",
+    "rootNamespace": "",
+    "references": [
+        "GUID:21b0c8d1703a94250bfac916590cea4f",
+        "GUID:ea715009a4efd4c6cbc85be3ae097dd3",
+        "GUID:df380645f10b7bc4b97d4f5eb6303d95",
+        "GUID:f06555f75b070af458a003d92f9efb00",
+        "GUID:02f771204943f4a40949438e873e3eff"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [
+        {
+            "name": "Unity",
+            "expression": "2019",
+            "define": "UNITY"
+        },
+        {
+            "name": "com.unity.visualscripting",
+            "expression": "1",
+            "define": "USE_VISUAL_SCRIPTING"
+        },
+        {
+            "name": "com.unity.shadergraph",
+            "expression": "1",
+            "define": "USE_SHADER_GRAPH"
+        }
+    ],
+    "noEngineReferences": false
+}
