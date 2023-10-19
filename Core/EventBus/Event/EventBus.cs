@@ -8,10 +8,15 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using System.Threading;
 using Luna.Core.Dispatch;
 using Luna.Extensions;
+
+#if UNITY
+using UnityEngine;
+#endif
 
 namespace Luna.Core.Event
 {
@@ -34,8 +39,11 @@ namespace Luna.Core.Event
             foreach (MethodInfo method in listener.GetType().GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic))
                 foreach (Attribute attribute in method.GetCustomAttributes(true))
                 {
+#if UNITY                    
+                    // Debug.Log("Register: " + method);
+#else
                     Console.WriteLine("Register: " + method);
-
+#endif
                     Subscribe subscribeInfo = attribute as Subscribe;
                     if (subscribeInfo == null)
                         continue;
@@ -64,8 +72,11 @@ namespace Luna.Core.Event
             foreach (MethodInfo method in listener.GetType().GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic))
                 foreach (Attribute attribute in method.GetCustomAttributes(true))
                 {
+#if UNITY
+                    Debug.Log("Unregister: " + method);
+#else
                     Console.WriteLine("Unregister: " + method);
-
+#endif
                     if (!(attribute is Subscribe))
                         continue;
 
@@ -75,8 +86,8 @@ namespace Luna.Core.Event
                         var action = method.CreateDelegate(listener);
                         var type = parameters[0].ParameterType;
 
-                        if (eventHandlers.ContainsKey(type))
-                            eventHandlers[type].RemoveAll(item => item.Handler == action);
+                        if (eventHandlers.TryGetValue(type, out var handler))
+                            handler.RemoveAll(item => item.Handler == action);
                     }
                     else throw new Exception("Subscribe method must have only one parameter!");
                 }
@@ -99,7 +110,11 @@ namespace Luna.Core.Event
                 try { Invoke(sub, newEvent); } 
                 catch (Exception e)
                 {
+#if UNITY
+                    Debug.Log(e);
+#else
                     Console.WriteLine(e);
+#endif
                     throw;
                 }
             }

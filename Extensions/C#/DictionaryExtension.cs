@@ -17,7 +17,7 @@ namespace Luna.Extensions
         public static Value Get<Key, Value>(this Dictionary<Key, Value> dict, Key key)
         {
             if (dict == null || !dict.ContainsKey(key))
-                return default(Value);
+                return default;
             return dict[key];
         }
     }
