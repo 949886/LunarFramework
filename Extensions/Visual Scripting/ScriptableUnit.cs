@@ -6,7 +6,7 @@ using UnityEngine;
 
 using Unity.VisualScripting;
 
-namespace Luna.Unity.VisualScripting
+namespace Luna.Extensions.VisualScripting
 {
     public abstract class ScriptableUnit : Unit
     {

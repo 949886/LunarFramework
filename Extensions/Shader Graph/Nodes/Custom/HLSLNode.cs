@@ -28,7 +28,7 @@ using UnityEditor.UIElements;
 
 // [TODO] Shader not working when using HLSL function
 
-namespace Luna.Unity.ShaderGraph
+namespace Luna.Extensions.ShaderGraph
 {
     // [Title("Utility", "HLSL Function")]
     class HLSLNode : CustomFunctionNode

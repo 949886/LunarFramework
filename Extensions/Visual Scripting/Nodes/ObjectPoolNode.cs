@@ -13,7 +13,7 @@ using UnityEngine.Rendering;
 
 using Unity.VisualScripting;
 
-namespace Luna.Unity.VisualScripting
+namespace Luna.Extensions.VisualScripting
 {
 
     [UnitTitle("Object Pool")]
