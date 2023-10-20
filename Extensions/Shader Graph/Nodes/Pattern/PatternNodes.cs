@@ -1,4 +1,5 @@
-﻿#if UNITY_EDITOR
+﻿#if UNITY_EDITOR && USE_SHADER_GRAPH
+
 using UnityEditor.ShaderGraph;
 using System.Reflection;
 using UnityEngine;

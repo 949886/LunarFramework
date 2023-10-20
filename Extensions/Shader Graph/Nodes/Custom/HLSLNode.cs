@@ -5,7 +5,7 @@
 // Created by LunarEclipse on 2023-07-19 11:35.
 // Copyright © 2023 LunarEclipse. All rights reserved.
 
-#if UNITY_EDITOR
+#if UNITY_EDITOR && USE_SHADER_GRAPH
 
 using System;
 using System.IO;
