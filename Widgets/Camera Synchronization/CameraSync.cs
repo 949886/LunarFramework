@@ -1,4 +1,7 @@
-﻿#if UNITY_EDITOR
+﻿// From https://github.com/JasonMa0012/JTRP
+// Original author: JasonMa0012
+
+#if UNITY_EDITOR
 
 using System;
 using UnityEditor;
