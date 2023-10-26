@@ -5,9 +5,9 @@ using UnityEngine;
 #if USE_VISUAL_SCRIPTING
 using Unity.VisualScripting;
 
-namespace Luna.Unity.VisualScripting
+namespace Luna.Extensions.VisualScripting
 {
-    public class Test : ScriptableUnit
+    public class TestNode : ScriptableUnit
     {
         [DoNotSerialize] // No need to serialize ports
         public ValueInput myValueA; // Adding the ValueInput variable for myValueA

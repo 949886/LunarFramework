@@ -1,4 +1,6 @@
-﻿using System.Collections;
+﻿#if UNITY_EDITOR && USE_SHADER_GRAPH
+
+using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
 using UnityEditor.ShaderGraph;
@@ -150,3 +152,5 @@ internal class ComplexPowerNode : CodeFunctionNode {
 ";
 	}
 }
+
+#endif

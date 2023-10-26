@@ -23,7 +23,8 @@ public class AFX_RampCreate : EditorWindow
     public int serial = 1;
     public Vector2 resolution = new Vector2(256, 8);
     public float[] gaodus;
-    [MenuItem("Tools/渐变图生成工具", false, 1100)]
+
+    [MenuItem("Tools/Image/渐变图生成工具", false, 1100)]
     static void RampCreateWindow ()
     {
         AFX_RampCreate window = EditorWindow.GetWindow<AFX_RampCreate>();
