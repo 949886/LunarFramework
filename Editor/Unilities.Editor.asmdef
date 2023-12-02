@@ -1,0 +1,16 @@
+{
+    "name": "Unilities.Editor",
+    "rootNamespace": "",
+    "references": [
+        "GUID:1ce3b06d7c665e742aecb3f4ff333a4b"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

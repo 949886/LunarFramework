@@ -6,7 +6,8 @@
         "GUID:ea715009a4efd4c6cbc85be3ae097dd3",
         "GUID:df380645f10b7bc4b97d4f5eb6303d95",
         "GUID:f06555f75b070af458a003d92f9efb00",
-        "GUID:02f771204943f4a40949438e873e3eff"
+        "GUID:02f771204943f4a40949438e873e3eff",
+        "GUID:75469ad4d38634e559750d17036d5f7c"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],
@@ -30,6 +31,11 @@
             "name": "com.unity.shadergraph",
             "expression": "1",
             "define": "USE_SHADER_GRAPH"
+        },
+        {
+            "name": "com.unity.inputsystem",
+            "expression": "1",
+            "define": "USE_INPUT_SYSTEM"
         }
     ],
     "noEngineReferences": false

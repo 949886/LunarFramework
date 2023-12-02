@@ -1,4 +1,6 @@
-﻿using System;
+﻿#if UNITY_EDITOR && USE_SHADER_GRAPH
+
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
@@ -193,3 +195,5 @@ internal class RandomColorNode : CodeFunctionNode {
 ";
 	}
 }
+
+#endif
