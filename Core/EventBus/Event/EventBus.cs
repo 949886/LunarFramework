@@ -104,10 +104,10 @@ namespace Luna.Core.Event
             if (subscriptions == null)
                 return;
 
-            foreach (Subscription sub in subscriptions)
+            foreach (var sub in subscriptions)
             {
                 //try { sub.Handler.DynamicInvoke(newEvent); } /* Old implementation without thread mode */
-                try { Invoke(sub, newEvent); } 
+                try { sub.Invoke(newEvent); } 
                 catch (Exception e)
                 {
 #if UNITY
@@ -119,27 +119,6 @@ namespace Luna.Core.Event
                 }
             }
         }
-
-        private void Invoke(Subscription subscription, object newEvent)
-        {
-            switch (subscription.Subscribe.threadMode)
-            {
-                case ThreadMode.DEFAULT:
-                    subscription.Handler.DynamicInvoke(newEvent);
-                    break;
-                case ThreadMode.MAIN:
-                    DispatchQueue.Main.Async(() => {
-                        subscription.Handler.DynamicInvoke(newEvent);
-                    });
-                    break;
-                case ThreadMode.BACKGROUND:
-                    DispatchQueue.Global.Async(() => {
-                        subscription.Handler.DynamicInvoke(newEvent);
-                    });
-                    break;
-            }
-        }
-
 
     }
 

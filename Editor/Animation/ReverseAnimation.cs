@@ -42,7 +42,7 @@ public class ReverseAnimationClip : ScriptableWizard
 {
     public string NewFileName = "";
 
-    [MenuItem("Assets/Custom/Reverse Animation Clip...", priority = 303)]
+    [MenuItem("Assets/Animation/Reverse Animation Clip...", priority = 303)]
     private static void ReverseAnimationClipWizard()
     {
         ScriptableWizard.DisplayWizard<ReverseAnimationClip>("Reverse Animation Clip...", "Reverse");

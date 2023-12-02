@@ -7,8 +7,7 @@ using UnityEngine;
 
 public class TrimAnimationClipsMenuItem : MonoBehaviour
 {
-    [MenuItem("Assets/Custom/TrimAnimationClips", priority = 302)]
-    [System.Obsolete]
+    [MenuItem("Assets/Animation/Trim Animation Clips", priority = 302)]
     static void TrimAnimationClips()
     {
         if (Selection.activeObject == null) return;
@@ -21,32 +20,21 @@ public class TrimAnimationClipsMenuItem : MonoBehaviour
                     // Debug.Log($"{AssetDatabase.GetAssetPath(obj.GetInstanceID())}.");
                     HandleAnimationClip(obj as AnimationClip);
                     break;
-                case "SceneAsset":
-
+                case "SceneAsset": break;
+                case "DefaultAsset":// Unknown Item
+                    if (AssetDatabase.IsValidFolder(AssetDatabase.GetAssetPath(Selection.activeObject))) { }
                     break;
-                case "DefaultAsset":
-                    if (AssetDatabase.IsValidFolder(AssetDatabase.GetAssetPath(Selection.activeObject)))
-                    {
-
-                    }
-                    //UnknownItem
-                    break;
-                case "MonoScript":
-                    //IsAScript
+                case "MonoScript":  // Script
                     break;
                 case "GameObject":
-                    //IsAGameObject
-                    if (PrefabUtility.GetPrefabAssetType(Selection.activeGameObject) != PrefabAssetType.NotAPrefab)
-                    {
-
-                    }
-                    //IsAPrefab
+                    //Is a GameObject
+                    if (PrefabUtility.GetPrefabAssetType(Selection.activeGameObject) != PrefabAssetType.NotAPrefab) { }
+                    //Is a Prefab
+                    else { }
                     break;
-                case "Shader":
-                    //IsAShader
+                case "Shader": 
                     break;
-                case "AudioMixerController":
-                    //IsAnAudioMixer
+                case "AudioMixerController": 
                     break;
                 default:
                     Debug.Log($"Default: {Selection.activeObject.GetType().Name}");
@@ -55,8 +43,7 @@ public class TrimAnimationClipsMenuItem : MonoBehaviour
         }
 
     }
-
-    [System.Obsolete]
+    
     static void HandleAnimationClip(AnimationClip theAnimation)
     {
         Debug.Log($"Handle {theAnimation}");
@@ -64,14 +51,6 @@ public class TrimAnimationClipsMenuItem : MonoBehaviour
         try
         {
             AssetDatabase.StartAssetEditing();
-            
-            //去除scale曲线
-            foreach (EditorCurveBinding theCurveBinding in AnimationUtility.GetCurveBindings(theAnimation))
-            {
-                string name = theCurveBinding.propertyName.ToLower();
-                if (name.Contains("scale"))
-                    AnimationUtility.SetEditorCurve(theAnimation, theCurveBinding, null);
-            }
 
             var bindings = AnimationUtility.GetCurveBindings(theAnimation);
             foreach (var binding in bindings)
@@ -83,7 +62,7 @@ public class TrimAnimationClipsMenuItem : MonoBehaviour
                 if (binding.propertyName.ToLower().Contains("scale"))
                     AnimationUtility.SetEditorCurve(theAnimation, binding, null);
 
-                //浮点数精度压缩到f3
+                //浮点数精度压缩到f4
                 for (int i = 0; i < keys.Length; i++)
                 {
                     var keyFrame = keys[i];
@@ -102,10 +81,7 @@ public class TrimAnimationClipsMenuItem : MonoBehaviour
                     var keyFrame = curve.keys[i];
                     
                     if (Mathf.Abs((keyFrame.value - curve.keys[j].value) / curve.keys[j].value) < 0.01 && i != 0)
-                    {
                         curve.RemoveKey(i);
-                        continue;
-                    }
                     else j = i;
                 }
 
@@ -119,13 +95,10 @@ public class TrimAnimationClipsMenuItem : MonoBehaviour
         }
         catch (System.Exception e)
         {
-            Debug.LogError(string.Format("CompressAnimationClip Failed !!! animation : {0} error: {1}", theAnimation, e));
+            Debug.LogError($"CompressAnimationClip Failed !!! animation : {theAnimation} error: {e}");
         }
         finally
         {
-            //在 "finally" 代码块中添加
-            //对 StopAssetEditing 的调用可确保
-            //在离开此函数时重置 AssetDatabase 状态
             AssetDatabase.StopAssetEditing();
         }
     }
