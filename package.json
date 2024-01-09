@@ -9,6 +9,9 @@
     "email": "yae-sakura@outlook.com",
     "url": "https://lunareclipse.cc"
   },
+  "dependencies": {
+    "com.cysharp.unitask": "https://github.com/Cysharp/UniTask.git?path=/src/UniTask/Assets/Plugins/UniTask"
+  },
   "samples": [
     {
       "displayName": "Object Pool Examples",

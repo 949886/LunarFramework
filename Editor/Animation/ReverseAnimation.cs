@@ -34,15 +34,18 @@ Hope this helps and please comment with any questions. Thanks!
 
 #if UNITY_EDITOR
 
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
 using System.IO;
+using System.Linq;
+using System.Threading.Tasks;
 
 public class ReverseAnimationClip : ScriptableWizard
 {
     public string NewFileName = "";
 
-    [MenuItem("Assets/Animation/Reverse Animation Clip...", priority = 303)]
+    [MenuItem("Assets/Animation/Reverse Animation Clip to New File...", priority = 303)]
     private static void ReverseAnimationClipWizard()
     {
         ScriptableWizard.DisplayWizard<ReverseAnimationClip>("Reverse Animation Clip...", "Reverse");
@@ -126,6 +129,193 @@ public class ReverseAnimationClip : ScriptableWizard
             return clips[0] as AnimationClip;
         }
         return null;
+    }
+    
+    
+    [MenuItem("Assets/Animation/Reverse Animation Clip", priority = 302)]
+    static void ReverseAnimationClips()
+    {
+        if (Selection.activeObject == null) return;
+
+        foreach (var obj in Selection.objects)
+        {
+            switch (Selection.activeObject.GetType().Name)
+            {
+                case "AnimationClip":
+                    // Debug.Log($"{AssetDatabase.GetAssetPath(obj.GetInstanceID())}.");
+                    HandleAnimationClip(obj as AnimationClip);
+                    break;
+                case "SceneAsset": break;
+                case "DefaultAsset":// Unknown Item
+                    if (AssetDatabase.IsValidFolder(AssetDatabase.GetAssetPath(Selection.activeObject))) { }
+                    break;
+                case "MonoScript":  // Script
+                    break;
+                case "GameObject":
+                    //Is a GameObject
+                    if (PrefabUtility.GetPrefabAssetType(Selection.activeGameObject) != PrefabAssetType.NotAPrefab) { }
+                    //Is a Prefab
+                    else { }
+                    break;
+                case "Shader": 
+                    break;
+                case "AudioMixerController": 
+                    break;
+                default:
+                    Debug.Log($"Default: {Selection.activeObject.GetType().Name}");
+                    break;
+            }
+        }
+    }
+    
+    [MenuItem("Assets/Animation/Reverse Animation Clip Asynchronously", priority = 302)]
+    static async void ReverseAnimationClipsAsync()
+    {
+        if (Selection.activeObject == null) return;
+
+        foreach (var obj in Selection.objects)
+        {
+            switch (Selection.activeObject.GetType().Name)
+            {
+                case "AnimationClip":
+                    // Debug.Log($"{AssetDatabase.GetAssetPath(obj.GetInstanceID())}.");
+                    await HandleAnimationClipAsync(obj as AnimationClip);
+                    break;
+                case "SceneAsset": break;
+                case "DefaultAsset":// Unknown Item
+                    if (AssetDatabase.IsValidFolder(AssetDatabase.GetAssetPath(Selection.activeObject))) { }
+                    break;
+                case "MonoScript":  // Script
+                    break;
+                case "GameObject":
+                    //Is a GameObject
+                    if (PrefabUtility.GetPrefabAssetType(Selection.activeGameObject) != PrefabAssetType.NotAPrefab) { }
+                    //Is a Prefab
+                    else { }
+                    break;
+                case "Shader": 
+                    break;
+                case "AudioMixerController": 
+                    break;
+                default:
+                    Debug.Log($"Default: {Selection.activeObject.GetType().Name}");
+                    break;
+            }
+        }
+    }
+    
+    static void HandleAnimationClip(AnimationClip theAnimation)
+    {
+        Debug.Log($"Handle {theAnimation}");
+        
+        try
+        {
+            AssetDatabase.StartAssetEditing();
+
+            var bindings = AnimationUtility.GetCurveBindings(theAnimation);
+            foreach (var binding in bindings)
+            {
+                var curve = AnimationUtility.GetEditorCurve(theAnimation, binding);
+                var keys = curve.keys;
+                
+                int keyCount = keys.Length;
+                
+                // Swap wrap modes
+                (curve.postWrapMode, curve.preWrapMode) = 
+                    (curve.preWrapMode, curve.postWrapMode);
+                
+                // Reverse keys
+                for (int i = 0; i < keyCount; i++)
+                {
+                    Keyframe key = keys[i];
+                    key.time = theAnimation.length - key.time;
+                    float tmp = -key.inTangent;
+                    key.inTangent = -key.outTangent;
+                    key.outTangent = tmp;
+                    keys[i] = key;
+                }
+                
+                curve.keys = keys;
+                theAnimation.SetCurve(binding.path, binding.type, binding.propertyName, curve);
+            }
+
+            AssetDatabase.SaveAssets();
+
+            Debug.Log($"{theAnimation} Done.");
+        }
+        catch (System.Exception e)
+        {
+            Debug.LogError($"Handle AnimationClip {theAnimation} Failed !!! error: {e}");
+        }
+        finally
+        {
+            AssetDatabase.StopAssetEditing();
+        }
+    }
+    
+    static async Task HandleAnimationClipAsync(AnimationClip theAnimation)
+    {
+        Debug.Log($"Handle {theAnimation}");
+        
+        try
+        {
+            AssetDatabase.StartAssetEditing();
+
+            var tasks = new List<Task<(EditorCurveBinding, AnimationCurve, Keyframe[])>>();
+            
+            var bindings = AnimationUtility.GetCurveBindings(theAnimation);
+            foreach (var binding in bindings)
+            {
+                var curve = AnimationUtility.GetEditorCurve(theAnimation, binding);
+                var keys = curve.keys;
+                var length = theAnimation.length;
+                
+                var task = Task.Run(() =>
+                {
+                    int keyCount = keys.Length;
+                    
+                    // Swap wrap modes
+                    (curve.postWrapMode, curve.preWrapMode) = 
+                        (curve.preWrapMode, curve.postWrapMode);
+
+                    // Reverse keys
+                    for (int i = 0; i < keyCount; i++)
+                    {
+                        Keyframe key = keys[i];
+                        key.time = length - key.time;
+                        float tmp = -key.inTangent;
+                        key.inTangent = -key.outTangent;
+                        key.outTangent = tmp;
+                        keys[i] = key;
+                    }
+                    
+                    return (binding, curve, keys);
+                });
+                tasks.Add(task);
+            }
+            
+            var result = await Task.WhenAll(tasks); 
+
+            result.ToList().ForEach(value =>
+            {
+                var binding = value.Item1;
+                var curve = value.Item2;
+                var keys = value.Item3;
+                curve.keys = keys;
+                theAnimation.SetCurve(binding.path, binding.type, binding.propertyName, curve);
+            });
+            
+            AssetDatabase.SaveAssets();
+            Debug.Log($"{theAnimation} Done.");
+        }
+        catch (System.Exception e)
+        {
+            Debug.LogError($"Handle AnimationClip {theAnimation} Failed !!! error: {e}");
+        }
+        finally
+        {
+            AssetDatabase.StopAssetEditing();
+        }
     }
 }
 

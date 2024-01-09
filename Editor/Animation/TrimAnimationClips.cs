@@ -70,6 +70,8 @@ public class TrimAnimationClipsMenuItem : MonoBehaviour
                     keyFrame.value = float.Parse(keyFrame.value.ToString("F4"));
                     keyFrame.inTangent = float.Parse(keyFrame.inTangent.ToString("F4"));
                     keyFrame.outTangent = float.Parse(keyFrame.outTangent.ToString("F4"));
+                    keyFrame.inWeight = float.Parse(keyFrame.inWeight.ToString("F4"));
+                    keyFrame.outWeight = float.Parse(keyFrame.outWeight.ToString("F4"));
                     
                     keys[i] = keyFrame;
                 }
@@ -80,7 +82,7 @@ public class TrimAnimationClipsMenuItem : MonoBehaviour
                 {
                     var keyFrame = curve.keys[i];
                     
-                    if (Mathf.Abs((keyFrame.value - curve.keys[j].value) / curve.keys[j].value) < 0.01 && i != 0)
+                    if (Mathf.Abs((keyFrame.value - curve.keys[j].value) / curve.keys[j].value) < 0.1 && i != 0)
                         curve.RemoveKey(i);
                     else j = i;
                 }
@@ -95,7 +97,7 @@ public class TrimAnimationClipsMenuItem : MonoBehaviour
         }
         catch (System.Exception e)
         {
-            Debug.LogError($"CompressAnimationClip Failed !!! animation : {theAnimation} error: {e}");
+            Debug.LogError($"Handle AnimationClip {theAnimation} Failed !!! error: {e}");
         }
         finally
         {

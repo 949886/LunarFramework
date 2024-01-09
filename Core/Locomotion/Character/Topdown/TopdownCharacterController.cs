@@ -43,9 +43,9 @@ namespace Luna.Core.Locomotion.Character
         {
             var move = inputs.Gameplay.Move.ReadValue<Vector2>();
             var look = inputs.Gameplay.Look.ReadValue<Vector2>();
-            var run = inputs.Gameplay.Run.ReadValue<float>();
+            var sprint = inputs.Gameplay.Sprint.ReadValue<float>();
 
-            if (run > 0.5) move *= 2;
+            if (sprint > 0.5) move *= 2;
 
             // Update orientation first, then move.
             // Otherwise move orientation will lag behind by one frame.

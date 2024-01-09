@@ -42,8 +42,8 @@ public class PixelCharacterController : MonoBehaviour
     {
         var look = inputs.Gameplay.Look.ReadValue<Vector2>();
         var move = inputs.Gameplay.Move.ReadValue<Vector2>();
-        var run = inputs.Gameplay.Run.ReadValue<float>();
-        if (run > 0.5)
+        var sprint = inputs.Gameplay.Sprint.ReadValue<float>();
+        if (sprint > 0.5)
         {
             move *= 2;
         }
