@@ -2,9 +2,13 @@
     "name": "Unilities.Editor",
     "rootNamespace": "",
     "references": [
-        "GUID:1ce3b06d7c665e742aecb3f4ff333a4b"
+        "GUID:1ce3b06d7c665e742aecb3f4ff333a4b",
+        "GUID:02f771204943f4a40949438e873e3eff",
+        "GUID:f06555f75b070af458a003d92f9efb00"
     ],
-    "includePlatforms": [],
+    "includePlatforms": [
+        "Editor"
+    ],
     "excludePlatforms": [],
     "allowUnsafeCode": false,
     "overrideReferences": false,

@@ -3,12 +3,8 @@
 
 #if UNITY_EDITOR
 
-using System;
 using UnityEditor;
-using UnityEditor.Timeline;
-using UnityEditor.Playables;
 using UnityEngine;
-using UnityEngine.Timeline;
 using UnityEngine.Playables;
 
 namespace JTRP.Editor.Utilities
