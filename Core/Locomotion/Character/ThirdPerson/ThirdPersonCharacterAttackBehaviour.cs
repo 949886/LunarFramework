@@ -1,6 +1,7 @@
 ﻿// Created by LunarEclipse on 2024-01-05 23:04.
 
 using Cysharp.Threading.Tasks;
+using JetBrains.Annotations;
 using Luna.Extensions.Unity;
 using UnityEngine;
 
@@ -10,6 +11,7 @@ namespace Luna.Core.Locomotion.Character
     {
         public int AttackIndex = 0; // 0 = Idle, 1-10 = Attack
         public GameObject Weapon;
+        public ParticleSystem SlashEffect;
         
         public override async void OnStateEnter(Animator animator, AnimatorStateInfo stateInfo, int layerIndex)
         {
@@ -19,6 +21,7 @@ namespace Luna.Core.Locomotion.Character
             {
                 ++AttackIndex;
                 Debug.Log("Attack Index: " + AttackIndex);
+                SlashEffect?.Play();
             }
             else
             {
@@ -38,6 +41,7 @@ namespace Luna.Core.Locomotion.Character
             Debug.Log("On Attack Exit: \n" + animator.GetCurrentStateName(0));
             
             animator.SetInteger("Attack Index", AttackIndex);
+            SlashEffect?.Stop();
         }
 
         public override void OnStateUpdate(Animator animator, AnimatorStateInfo stateInfo, int layerIndex)

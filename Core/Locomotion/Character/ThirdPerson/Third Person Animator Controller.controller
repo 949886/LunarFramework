@@ -1128,6 +1128,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   AttackIndex: 0
   Weapon: {fileID: 0}
+  SlashEffect: {fileID: 0}
 --- !u!1101 &-3623413899792562386
 AnimatorStateTransition:
   m_ObjectHideFlags: 1
