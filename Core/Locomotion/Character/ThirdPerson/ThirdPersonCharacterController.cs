@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections;
+using System.Linq;
 using Cysharp.Threading.Tasks;
 using Luna.Extensions;
 using Luna.Extensions.Unity;
@@ -7,6 +8,8 @@ using Luna.InputSystem;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.Interactions;
+using UnityEngine.Playables;
+using UnityEngine.Timeline;
 using Random = UnityEngine.Random;
 
 namespace Luna.Core.Locomotion.Character
@@ -15,7 +18,8 @@ namespace Luna.Core.Locomotion.Character
     {
         public float moveSpeed = 5f;
         public float burstSpeed;
-
+        
+        public GameObject weapon;
         public GameObject projectile;
 
         private ThirdPersonInput inputs;
@@ -24,20 +28,30 @@ namespace Luna.Core.Locomotion.Character
         
         private Animator animator;
         private ThirdPersonCharacterAttackBehaviour attackBehaviour;
+        
+        private PlayableDirector _playableDirector;
+        private TimelineAsset _timelineAsset;
+        private IMarker[] _markers = new IMarker[] {};
 
         private void Awake()
         {
             inputs = new ThirdPersonInput();
             inputs.Gameplay.AddCallbacks(this);
             
-            animator = GetComponentInChildren<Animator>(); 
+            animator = GetComponent<Animator>(); 
             attackBehaviour = animator.GetBehaviour<ThirdPersonCharacterAttackBehaviour>();
+            attackBehaviour.Weapon = weapon;
+            
+            _playableDirector = GetComponent<PlayableDirector>();
+            _timelineAsset = _playableDirector.playableAsset as TimelineAsset;
+            if (_timelineAsset) _markers = _timelineAsset.markerTrack.GetMarkers().ToArray();
         }
 
         private void OnEnable()
         {
             inputs.Enable();
         }
+        
         private void Start()
         {
             
@@ -76,7 +90,7 @@ namespace Luna.Core.Locomotion.Character
             else
             {
                 attackBehaviour.AttackIndex = 0;
-                animator.SetInteger("Attack Index", 0);
+                // animator.SetInteger("Attack Index", 0);
             }
         }
 
@@ -272,13 +286,17 @@ namespace Luna.Core.Locomotion.Character
                 {
                     var state = animator.GetCurrentAnimatorStateInfo(0);
                     var stateName = animator.GetCurrentStateName(0);
-                    Debug.Log("state: " + stateName);
-                    Debug.Log("attackBehaviour: " + attackBehaviour.AttackIndex);
+                    Debug.Log("Attack Index: " + attackBehaviour.AttackIndex);
                     animator.SetBool("Attack", true);
+                    // _playableDirector.Play();
+                    // _playableDirector.time = _markers[0].time;
                     // await UniTask.WaitForSeconds(0.1f); 
                     // await UniTask.NextFrame(); 
                     await UniTask.DelayFrame(5);
                     // animator.SetBool("Attack", false);
+                    Time.timeScale = 0.1f;
+                    await UniTask.WaitForSeconds(1f); 
+                    Time.timeScale = 1f;
                 }
 
                 if (context.canceled)
@@ -403,8 +421,13 @@ namespace Luna.Core.Locomotion.Character
             return Mathf.RoundToInt(stepCount);
         }
 
+        public void SyncEffectPosition()
+        {
+            // swordSlashEffect.SetTransform(transform);
+        }
+
         #endregion
-        
+
 
     }
 }

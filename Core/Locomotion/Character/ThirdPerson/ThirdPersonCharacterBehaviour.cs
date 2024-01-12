@@ -10,39 +10,37 @@ namespace Luna.Core.Locomotion.Character
         
         public override void OnStateEnter(Animator animator, AnimatorStateInfo stateInfo, int layerIndex)
         {
-            Debug.Log("On State Enter");
+            // Debug.Log("On State Enter");
         }
 
         public override void OnStateExit(Animator animator, AnimatorStateInfo stateInfo, int layerIndex)
         {
-            Debug.Log("On State Exit");
+            // Debug.Log("On State Exit");
         }
 
         public override void OnStateUpdate(Animator animator, AnimatorStateInfo stateInfo, int layerIndex)
         {
-            Debug.Log("On State Update");
+            // Debug.Log("On State Update");
         }
 
         public override void OnStateMove(Animator animator, AnimatorStateInfo stateInfo, int layerIndex)
         {
-            Debug.Log("On State Move");
+            // Debug.Log("On State Move");
         }
 
         public override void OnStateIK(Animator animator, AnimatorStateInfo stateInfo, int layerIndex)
         {
-            Debug.Log("On State IK");
+            // Debug.Log("On State IK");
         }
         
         public override void OnStateMachineEnter(Animator animator, int stateMachinePathHash)
         {
-            Debug.Log("On State Machine Enter");
-            
-            // Get State machine name
+            // Debug.Log("On State Machine Enter");
         }
         
         public override void OnStateMachineExit(Animator animator, int stateMachinePathHash)
         {
-            Debug.Log("On State Machine Exit");
+            // Debug.Log("On State Machine Exit");
         }
         
         private enum State: int

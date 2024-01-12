@@ -11,7 +11,6 @@ namespace Luna.Core.Locomotion.Character
     {
         public int AttackIndex = 0; // 0 = Idle, 1-10 = Attack
         public GameObject Weapon;
-        public ParticleSystem SlashEffect;
         
         public override async void OnStateEnter(Animator animator, AnimatorStateInfo stateInfo, int layerIndex)
         {
@@ -21,7 +20,6 @@ namespace Luna.Core.Locomotion.Character
             {
                 ++AttackIndex;
                 Debug.Log("Attack Index: " + AttackIndex);
-                SlashEffect?.Play();
             }
             else
             {
@@ -41,7 +39,6 @@ namespace Luna.Core.Locomotion.Character
             Debug.Log("On Attack Exit: \n" + animator.GetCurrentStateName(0));
             
             animator.SetInteger("Attack Index", AttackIndex);
-            SlashEffect?.Stop();
         }
 
         public override void OnStateUpdate(Animator animator, AnimatorStateInfo stateInfo, int layerIndex)
@@ -61,7 +58,7 @@ namespace Luna.Core.Locomotion.Character
             float progress = stateInfo.normalizedTime;
  
             // Display the current play percentage in the console
-            float currentPercentage = progress * 100f;
+            // float currentPercentage = progress * 100f;
             // Debug.Log("Current Play Percentage: " + currentPercentage + "%");
         }
 
@@ -77,7 +74,7 @@ namespace Luna.Core.Locomotion.Character
         public override void OnStateMachineEnter(Animator animator, int stateMachinePathHash)
         {
             Debug.Log("On Attack State Machine Enter");
-            // Weapon.SetActive(true);
+            Weapon.SetActive(true);
         }
         
         public override void OnStateMachineExit(Animator animator, int stateMachinePathHash)
@@ -85,7 +82,7 @@ namespace Luna.Core.Locomotion.Character
             Debug.Log("On Attack State Machine Exit");
             AttackIndex = 0;
             animator.SetInteger("Attack Index", AttackIndex);
-            // Weapon.SetActive(false);
+            Weapon.SetActive(false);
         }
     }
 }

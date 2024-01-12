@@ -187,14 +187,15 @@ AnimatorState:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: Ani_Avatar_Girl_Sword_PlayerGirl_Attack_02
+  m_Name: Attack2
   m_Speed: 1
   m_CycleOffset: 0
   m_Transitions:
   - {fileID: 5353081007862087062}
   - {fileID: -3985053998750853988}
   - {fileID: -6220314454563545458}
-  m_StateMachineBehaviours: []
+  m_StateMachineBehaviours:
+  - {fileID: -3241320244049665991}
   m_Position: {x: 50, y: 50, z: 0}
   m_IKOnFeet: 0
   m_WriteDefaultValues: 1
@@ -600,7 +601,7 @@ AnimatorState:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: Ani_Avatar_Girl_Sword_StandbyPutAwayPA
+  m_Name: StandbyPutAwayPA
   m_Speed: 1
   m_CycleOffset: 0
   m_Transitions:
@@ -811,14 +812,15 @@ AnimatorState:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: Ani_Avatar_Girl_Sword_PlayerGirl_Attack_01
+  m_Name: Attack1
   m_Speed: 1
   m_CycleOffset: 0
   m_Transitions:
   - {fileID: -6393405161677731952}
   - {fileID: 8275783090301360905}
   - {fileID: 774392486420389171}
-  m_StateMachineBehaviours: []
+  m_StateMachineBehaviours:
+  - {fileID: 5676093909555828063}
   m_Position: {x: 50, y: 50, z: 0}
   m_IKOnFeet: 0
   m_WriteDefaultValues: 1
@@ -1128,7 +1130,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   AttackIndex: 0
   Weapon: {fileID: 0}
-  SlashEffect: {fileID: 0}
 --- !u!1101 &-3623413899792562386
 AnimatorStateTransition:
   m_ObjectHideFlags: 1
@@ -1201,6 +1202,21 @@ AnimatorStateTransition:
   m_InterruptionSource: 0
   m_OrderedInterruption: 1
   m_CanTransitionToSelf: 1
+--- !u!114 &-3241320244049665991
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f1d0d010466c402f9acf8346a445926e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  timeline: {fileID: 11400000, guid: 0674b15f178cb4341a79cb1521a20493, type: 2}
+  playOnEnter: 1
+  initialTime: 1.866667
 --- !u!1102 &-3176877198116258377
 AnimatorState:
   serializedVersion: 6
@@ -1481,6 +1497,21 @@ AnimatorState:
   m_MirrorParameter: 
   m_CycleOffsetParameter: 
   m_TimeParameter: 
+--- !u!114 &-1240667430523618583
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f1d0d010466c402f9acf8346a445926e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  timeline: {fileID: 11400000, guid: 0674b15f178cb4341a79cb1521a20493, type: 2}
+  playOnEnter: 1
+  initialTime: 3.65
 --- !u!1101 &-1113879304829015583
 AnimatorStateTransition:
   m_ObjectHideFlags: 1
@@ -1647,6 +1678,32 @@ AnimatorStateTransition:
   m_InterruptionSource: 0
   m_OrderedInterruption: 1
   m_CanTransitionToSelf: 1
+--- !u!1102 &-519242598615597821
+AnimatorState:
+  serializedVersion: 6
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: VFX_Lumine_Attack2
+  m_Speed: 1
+  m_CycleOffset: 0
+  m_Transitions: []
+  m_StateMachineBehaviours: []
+  m_Position: {x: 50, y: 50, z: 0}
+  m_IKOnFeet: 0
+  m_WriteDefaultValues: 1
+  m_Mirror: 0
+  m_SpeedParameterActive: 0
+  m_MirrorParameterActive: 0
+  m_CycleOffsetParameterActive: 0
+  m_TimeParameterActive: 0
+  m_Motion: {fileID: 7400000, guid: be517c4639ed714469fb990e18167def, type: 2}
+  m_Tag: 
+  m_SpeedParameter: 
+  m_MirrorParameter: 
+  m_CycleOffsetParameter: 
+  m_TimeParameter: 
 --- !u!1102 &-510554481822457082
 AnimatorState:
   serializedVersion: 6
@@ -1761,6 +1818,21 @@ AnimatorStateTransition:
   m_InterruptionSource: 0
   m_OrderedInterruption: 1
   m_CanTransitionToSelf: 1
+--- !u!114 &-20530685257483727
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f1d0d010466c402f9acf8346a445926e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  timeline: {fileID: 11400000, guid: 0674b15f178cb4341a79cb1521a20493, type: 2}
+  playOnEnter: 1
+  initialTime: 7.95
 --- !u!1109 &-19263877748903628
 AnimatorTransition:
   m_ObjectHideFlags: 1
@@ -2042,7 +2114,7 @@ AnimatorState:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: Ani_Avatar_Girl_Sword_PlayerGirl_ExtraAttack
+  m_Name: ExtraAttack
   m_Speed: 1
   m_CycleOffset: 0
   m_Transitions:
@@ -2389,13 +2461,14 @@ AnimatorState:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: Ani_Avatar_Girl_Sword_PlayerGirl_Attack_05
+  m_Name: Attack5
   m_Speed: 1
   m_CycleOffset: 0
   m_Transitions:
   - {fileID: 1997277818257868986}
   - {fileID: 8884955358730249689}
-  m_StateMachineBehaviours: []
+  m_StateMachineBehaviours:
+  - {fileID: -20530685257483727}
   m_Position: {x: 50, y: 50, z: 0}
   m_IKOnFeet: 0
   m_WriteDefaultValues: 1
@@ -2417,14 +2490,15 @@ AnimatorState:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: Ani_Avatar_Girl_Sword_PlayerGirl_Attack_04
+  m_Name: Attack4
   m_Speed: 1
   m_CycleOffset: 0
   m_Transitions:
   - {fileID: -7838038159505507804}
   - {fileID: 4957843710064003290}
   - {fileID: 3755962815793273897}
-  m_StateMachineBehaviours: []
+  m_StateMachineBehaviours:
+  - {fileID: 6762007280322782821}
   m_Position: {x: 50, y: 50, z: 0}
   m_IKOnFeet: 0
   m_WriteDefaultValues: 1
@@ -2527,14 +2601,15 @@ AnimatorState:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: Ani_Avatar_Girl_Sword_PlayerGirl_Attack_03
+  m_Name: Attack3
   m_Speed: 1
   m_CycleOffset: 0
   m_Transitions:
   - {fileID: -1113879304829015583}
   - {fileID: 2749254658010416979}
   - {fileID: 409613110331032631}
-  m_StateMachineBehaviours: []
+  m_StateMachineBehaviours:
+  - {fileID: -1240667430523618583}
   m_Position: {x: 50, y: 50, z: 0}
   m_IKOnFeet: 0
   m_WriteDefaultValues: 1
@@ -2723,7 +2798,7 @@ AnimatorState:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: Ani_Avatar_Girl_Sword_WeaponStandby
+  m_Name: WeaponStandby
   m_Speed: 1
   m_CycleOffset: 0
   m_Transitions:
@@ -2952,6 +3027,25 @@ AnimatorStateTransition:
   m_InterruptionSource: 0
   m_OrderedInterruption: 1
   m_CanTransitionToSelf: 1
+--- !u!1107 &5225817415607515206
+AnimatorStateMachine:
+  serializedVersion: 6
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: VFX
+  m_ChildStates: []
+  m_ChildStateMachines: []
+  m_AnyStateTransitions: []
+  m_EntryTransitions: []
+  m_StateMachineTransitions: {}
+  m_StateMachineBehaviours: []
+  m_AnyStatePosition: {x: 50, y: 20, z: 0}
+  m_EntryPosition: {x: 50, y: 120, z: 0}
+  m_ExitPosition: {x: 800, y: 120, z: 0}
+  m_ParentStateMachinePosition: {x: 800, y: 20, z: 0}
+  m_DefaultState: {fileID: 0}
 --- !u!1101 &5251364769365147924
 AnimatorStateTransition:
   m_ObjectHideFlags: 1
@@ -3028,6 +3122,21 @@ AnimatorStateTransition:
   m_InterruptionSource: 0
   m_OrderedInterruption: 1
   m_CanTransitionToSelf: 1
+--- !u!114 &5676093909555828063
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f1d0d010466c402f9acf8346a445926e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  timeline: {fileID: 11400000, guid: 0674b15f178cb4341a79cb1521a20493, type: 2}
+  playOnEnter: 1
+  initialTime: 0
 --- !u!1107 &5925404573934426252
 AnimatorStateMachine:
   serializedVersion: 6
@@ -3052,6 +3161,9 @@ AnimatorStateMachine:
   - serializedVersion: 1
     m_State: {fileID: 2794855834991728221}
     m_Position: {x: 1040, y: 210, z: 0}
+  - serializedVersion: 1
+    m_State: {fileID: -519242598615597821}
+    m_Position: {x: 1075, y: 275, z: 0}
   m_ChildStateMachines:
   - serializedVersion: 1
     m_StateMachine: {fileID: -2412319230062206600}
@@ -3174,6 +3286,21 @@ AnimatorStateTransition:
   m_InterruptionSource: 0
   m_OrderedInterruption: 1
   m_CanTransitionToSelf: 1
+--- !u!114 &6762007280322782821
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f1d0d010466c402f9acf8346a445926e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  timeline: {fileID: 11400000, guid: 0674b15f178cb4341a79cb1521a20493, type: 2}
+  playOnEnter: 1
+  initialTime: 5.75
 --- !u!1107 &6773352283439054917
 AnimatorStateMachine:
   serializedVersion: 6
@@ -3481,7 +3608,7 @@ AnimatorStateTransition:
   m_TransitionDuration: 0.2
   m_TransitionOffset: 0
   m_ExitTime: 0.4
-  m_HasExitTime: 0
+  m_HasExitTime: 1
   m_HasFixedDuration: 1
   m_InterruptionSource: 0
   m_OrderedInterruption: 1
@@ -3493,7 +3620,7 @@ AnimatorState:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: Ani_Avatar_Girl_Sword_PlayerGirl_ExtraAttack_AS
+  m_Name: ExtraAttack_AS
   m_Speed: 1
   m_CycleOffset: 0
   m_Transitions:
