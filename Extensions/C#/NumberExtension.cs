@@ -1,5 +1,7 @@
 ﻿// Created by LunarEclipse on 2024-01-07 0:55.
 
+using System;
+
 namespace Luna.Extensions
 {
     public static class NumberExtension
@@ -57,6 +59,16 @@ namespace Luna.Extensions
         public static ushort Mod(this ushort x, ushort m)
         {
             return (ushort)((x % m + m) % m);
+        }
+        
+        public static bool AlmostEquals(this float float1, float float2, float precision)
+        {
+            return (Math.Abs(float1 - float2) <= precision);
+        }
+        
+        public static bool AlmostEquals(this double double1, double double2, double precision)
+        {
+            return (Math.Abs(double1 - double2) <= precision);
         }
     }
 }
