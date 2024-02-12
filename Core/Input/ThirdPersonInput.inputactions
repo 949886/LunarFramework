@@ -56,7 +56,7 @@
                     "id": "0fe379eb-95b9-42c9-b8ce-c165f2e234d1",
                     "expectedControlType": "Button",
                     "processors": "",
-                    "interactions": "",
+                    "interactions": "SlowTap",
                     "initialStateCheck": false
                 },
                 {
@@ -415,7 +415,7 @@
                 {
                     "name": "",
                     "id": "3937fa9f-e0e8-4b81-95df-0cf78f8a2b04",
-                    "path": "<Gamepad>/leftTrigger",
+                    "path": "<Gamepad>/buttonEast",
                     "interactions": "",
                     "processors": "",
                     "groups": "Gamepad",
@@ -426,7 +426,7 @@
                 {
                     "name": "",
                     "id": "faafef29-a726-4bfd-8a8e-39903fe003f6",
-                    "path": "<Mouse>/rightButton",
+                    "path": "<Mouse>/leftButton",
                     "interactions": "",
                     "processors": "",
                     "groups": "Keyboard&Mouse",
@@ -1414,7 +1414,7 @@
                 {
                     "name": "",
                     "id": "fc4afbd7-d625-4bb3-8b27-40b0bc5081a6",
-                    "path": "",
+                    "path": "<Keyboard>/tab",
                     "interactions": "",
                     "processors": "",
                     "groups": "",
