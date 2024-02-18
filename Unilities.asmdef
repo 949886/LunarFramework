@@ -42,6 +42,11 @@
             "name": "com.unity.visualeffectgraph",
             "expression": "1",
             "define": "USE_VISUAL_EFFECT_GRAPH"
+        },
+        {
+            "name": "com.unity.timeline",
+            "expression": "1",
+            "define": "USE_TIMELINE"
         }
     ],
     "noEngineReferences": false

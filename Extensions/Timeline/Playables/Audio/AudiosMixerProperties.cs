@@ -20,8 +20,6 @@ namespace Luna.Extensions.Timeline
 
         public override void PrepareFrame(Playable playable, FrameData info)
         {
-            Debug.Log("PrepareFrame");
-            
             if (!playable.IsValid() || !playable.IsPlayableOfType<AudioMixerPlayable>())
                 return;
 
