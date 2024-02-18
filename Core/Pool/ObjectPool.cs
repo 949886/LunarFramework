@@ -7,41 +7,43 @@
 
 using System;
 using System.Collections.Generic;
-using UnityEngine;
+using System.Runtime.CompilerServices;
 using Random = System.Random;
 
 namespace Luna.Core.Pool
 {
     public class ObjectPool
     {
-        private static readonly Dictionary<int, ObjectPool> objectPoolMap = new();
-        private static readonly Dictionary<int, WeakReference> referenceMap = new();
+        public static readonly ConditionalWeakTable<object, ObjectPool> objectPools = new();
 
         public readonly List<object> pooledObjects = new();
-        public int capacity = 128;
+        public int capacity = 64;
 
-        private static readonly Random random = new();
+        private static readonly Random _random = new();
 
-        public static T Get<T>(T original) where T : UnityEngine.Object
+        public static T Get<T>(T original) 
+#if UNITY
+        where T : UnityEngine.Object
+#else
+        where T : class, ICloneable
+#endif
         {
-            // Use the hash code of the original object as the key.
-            var hash = original.GetHashCode();
-
             // If the object is not pooled, create a new pool.
-            if (!objectPoolMap.ContainsKey(hash))
+            if (!objectPools.TryGetValue(original, out var pool))
             {
-                var objectPool = new ObjectPool();
-                objectPoolMap.Add(hash, objectPool);
-                referenceMap.Add(hash, new WeakReference(original));
+                pool = new ObjectPool();
+                objectPools.Add(original, pool);
             }
-
-            var pool = objectPoolMap[hash];
 
             // If the pool is not full, create a new object and add it to the pool.
             @ExpandCapacity:
             if (pool.pooledObjects.Count < pool.capacity)
             {
+#if UNITY
                 T t = UnityEngine.Object.Instantiate(original);
+#else
+                T t = original.Clone() as T;
+#endif
                 pool.pooledObjects.Add(t);
                 return t;
             }
@@ -50,8 +52,8 @@ namespace Luna.Core.Pool
                 // Try to find an inactive object in the pool.
                 for (int i = 0; i < 32; i++)
                 {
-                    var pooledObject = pool.pooledObjects[random.Next() % pool.capacity] as T;
-                    if ((pooledObject as GameObject)?.activeSelf != true)
+                    var pooledObject = pool.pooledObjects[_random.Next() % pool.capacity] as T;
+                    if ((pooledObject as UnityEngine.GameObject)?.activeSelf != true)
                         return pooledObject;
                 }
 
@@ -59,6 +61,73 @@ namespace Luna.Core.Pool
                 pool.capacity += 64;
                 goto @ExpandCapacity;
             }
+        }
+        
+        public static T Get<T>() where T : class, IActivatable
+        {
+            // If the object is not pooled, create a new pool.
+            if (!objectPools.TryGetValue(typeof(T), out var pool))
+            {
+                pool = new ObjectPool();
+                objectPools.Add(typeof(T), pool);
+            }
+
+            // If the pool is not full, create a new object and add it to the pool.
+            @ExpandCapacity:
+            if (pool.pooledObjects.Count < pool.capacity)
+            {
+                T t = Activator.CreateInstance<T>();
+                t.Active = true;
+                pool.pooledObjects.Add(t);
+                return t;
+            }
+            else
+            {
+                // Try to find an inactive object in the pool.
+                for (int i = 0; i < 32; i++)
+                    if (pool.pooledObjects[_random.Next() % pool.capacity] is T { Active: false } pooledObject)
+                        return pooledObject;
+
+                // If not found for 32 times, expand the capacity of the pool.
+                pool.capacity += 64;
+                goto @ExpandCapacity;
+            }
+        }
+        
+        public static ObjectPool GetPool<T>(T original)
+        {
+            // If the object is not pooled, create a new pool.
+            if (!objectPools.TryGetValue(original, out var pool))
+            {
+                pool = new ObjectPool();
+                objectPools.Add(original, pool);
+            }
+
+            return pool;
+        }
+        
+        public static ObjectPool GetPool<T>() where T : class
+        {
+            // If the object is not pooled, create a new pool.
+            if (!objectPools.TryGetValue(typeof(T), out var pool))
+            {
+                pool = new ObjectPool();
+                objectPools.Add(typeof(T), pool);
+            }
+
+            return pool;
+        }
+        
+        public void Release()
+        {
+#if UNITY
+            foreach (var pooledObject in pooledObjects)
+            {
+                if (pooledObject is UnityEngine.Object unityObject)
+                    UnityEngine.Object.Destroy(unityObject);
+            }
+#endif
+            pooledObjects.Clear();
         }
     }
 }
