@@ -61,9 +61,9 @@ namespace Luna.Extensions.Timeline
 #if UNITY_EDITOR
             clipBlender.GetHandle().SetScriptInstance(trackProperties.Clone());
             m_LiveMixerPlayable = clipBlender;
-#else
-            if (hasCurves)
-                clipBlender.GetHandle().SetScriptInstance(m_TrackProperties.Clone());
+// #else
+//             if (hasCurves)
+//                 clipBlender.GetHandle().SetScriptInstance(m_TrackProperties.Clone());
 #endif
 
             for (int i = 0; i < timelineClips.Count; i++)

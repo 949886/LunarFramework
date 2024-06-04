@@ -2,31 +2,34 @@
 
 using Cysharp.Threading.Tasks;
 using JetBrains.Annotations;
+using Luna.Core.Animation;
 using Luna.Extensions.Unity;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace Luna.Core.Locomotion.Character
 {
-    public class ThirdPersonCharacterAttackBehaviour : StateMachineBehaviour
+    public class ThirdPersonCharacterAttackBehaviour : AnimationStateBehaviour
     {
-        public int AttackIndex = 0; // 0 = Idle, 1-10 = Attack
-        public GameObject Weapon;
-        
-        public override async void OnStateEnter(Animator animator, AnimatorStateInfo stateInfo, int layerIndex)
+        [FormerlySerializedAs("AttackIndex")] public int attackIndex = 0; // 0 = Idle, 1-10 = Attack
+        [FormerlySerializedAs("Weapon")] public GameObject weapon;
+        public float windUpTime;
+
+        public override void OnAnimationStart(Animator animator, AnimatorStateInfo stateInfo, int layerIndex)
         {
             Debug.Log("On Attack Enter: \n" + animator.GetCurrentStateName(0));
             
             if (stateInfo.IsTag("Attack"))
             {
-                ++AttackIndex;
-                Debug.Log("Attack Index: " + AttackIndex);
+                ++attackIndex;
+                Debug.Log("Attack Index: " + attackIndex);
             }
             else
             {
-                AttackIndex = 0;
+                attackIndex = 0;
             }
             
-            animator.SetInteger("Attack Index", AttackIndex);
+            animator.SetInteger("Attack Index", attackIndex);
             
             // await UniTask.DelayFrame(2);
             
@@ -34,14 +37,28 @@ namespace Luna.Core.Locomotion.Character
             animator.SetBool("Extra Attack", false);
         }
 
-        public override void OnStateExit(Animator animator, AnimatorStateInfo stateInfo, int layerIndex)
+        public override void OnAnimationExit(Animator animator, AnimatorStateInfo stateInfo, int layerIndex)
         {
             Debug.Log("On Attack Exit: \n" + animator.GetCurrentStateName(0));
             
-            animator.SetInteger("Attack Index", AttackIndex);
+            animator.SetInteger("Attack Index", 0);
+            if (!stateInfo.IsTag("Attack"))
+            {
+                
+            }
         }
 
-        public override void OnStateUpdate(Animator animator, AnimatorStateInfo stateInfo, int layerIndex)
+        public override void OnAnimationEnd(Animator animator, AnimatorStateInfo stateInfo, int layerIndex)
+        {
+            
+        }
+
+        public override void OnAnimationFinish(Animator animator, AnimatorStateInfo stateInfo, int layerIndex)
+        {
+            
+        }
+
+        public override void OnAnimationUpdate(Animator animator, AnimatorStateInfo stateInfo, int layerIndex)
         {
             // Debug.Log("On Attack Update");
 
@@ -62,27 +79,43 @@ namespace Luna.Core.Locomotion.Character
             // Debug.Log("Current Play Percentage: " + currentPercentage + "%");
         }
 
-        public override void OnStateMove(Animator animator, AnimatorStateInfo stateInfo, int layerIndex)
+        public override void OnAnimationInterrupt(Animator animator, AnimatorStateInfo stateInfo, int layerIndex)
         {
-            // Debug.Log("On Attack Move ");
+            
         }
-        public override void OnStateIK(Animator animator, AnimatorStateInfo stateInfo, int layerIndex)
+
+        public override void OnAnimationTransitionInStart(Animator animator, AnimatorStateInfo stateInfo, int layerIndex)
         {
-            Debug.Log("On Attack IK");
+            
+        }
+
+        public override void OnAnimationTransitionInEnd(Animator animator, AnimatorStateInfo stateInfo, int layerIndex)
+        {
+            
+        }
+
+        public override void OnAnimationTransitionOutStart(Animator animator, AnimatorStateInfo stateInfo, int layerIndex)
+        {
+            
+        }
+
+        public override void OnAnimationTransitionOutEnd(Animator animator, AnimatorStateInfo stateInfo, int layerIndex)
+        {
+            
         }
         
         public override void OnStateMachineEnter(Animator animator, int stateMachinePathHash)
         {
             Debug.Log("On Attack State Machine Enter");
-            Weapon.SetActive(true);
+            weapon.SetActive(true);
         }
         
         public override void OnStateMachineExit(Animator animator, int stateMachinePathHash)
         {
             Debug.Log("On Attack State Machine Exit");
-            AttackIndex = 0;
-            animator.SetInteger("Attack Index", AttackIndex);
-            Weapon.SetActive(false);
+            attackIndex = 0;
+            animator.SetInteger("Attack Index", attackIndex);
+            weapon.SetActive(false);
         }
     }
 }

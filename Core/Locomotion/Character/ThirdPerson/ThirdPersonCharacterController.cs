@@ -17,6 +17,8 @@ namespace Luna.Core.Locomotion.Character
     public class ThirdPersonCharacterController : MonoBehaviour, ThirdPersonInput.IGameplayActions
     {
         public float moveSpeed = 5f;
+        public Transform moveTarget;
+        
         public float burstSpeed;
         
         public GameObject weapon;
@@ -32,6 +34,8 @@ namespace Luna.Core.Locomotion.Character
         private PlayableDirector _playableDirector;
         private TimelineAsset _timelineAsset;
         private IMarker[] _markers = new IMarker[] {};
+        
+        private Vector3 _deltaPosition;
 
         private void Awake()
         {
@@ -40,7 +44,7 @@ namespace Luna.Core.Locomotion.Character
             
             animator = GetComponent<Animator>(); 
             attackBehaviour = animator.GetBehaviour<ThirdPersonCharacterAttackBehaviour>();
-            attackBehaviour.Weapon = weapon;
+            attackBehaviour.weapon = weapon;
             
             _playableDirector = GetComponent<PlayableDirector>();
             _timelineAsset = _playableDirector.playableAsset as TimelineAsset;
@@ -49,12 +53,16 @@ namespace Luna.Core.Locomotion.Character
 
         private void OnEnable()
         {
+            if (moveTarget == null)
+            {
+                moveTarget = transform;
+            }
             inputs.Enable();
         }
         
         private void Start()
         {
-            
+            Physics.simulationMode = SimulationMode.Script;
         }
 
         private void OnDisable()
@@ -89,7 +97,7 @@ namespace Luna.Core.Locomotion.Character
             }
             else
             {
-                attackBehaviour.AttackIndex = 0;
+                attackBehaviour.attackIndex = 0;
                 // animator.SetInteger("Attack Index", 0);
             }
         }
@@ -106,6 +114,10 @@ namespace Luna.Core.Locomotion.Character
             // // Vector2 newPos = currentPos + movement * Time.fixedDeltaTime;
             //
             // SetDirection(movement);
+            
+            Physics.Simulate(Time.deltaTime);
+            moveTarget.position += _deltaPosition; 
+            _deltaPosition = Vector3.zero;
         }
 
         private void OnAnimatorMove()
@@ -115,7 +127,10 @@ namespace Luna.Core.Locomotion.Character
             // newPosition.x += animator.deltaPosition.x;
             // newPosition.z += animator.deltaPosition.z;
             // transform.position = newPosition;
-            transform.position += animator.deltaPosition;
+            
+            // Debug.Log($"onAnimatorMove {moveTarget}");
+            // _deltaPosition = animator.deltaPosition;
+            moveTarget.position += animator.deltaPosition; 
         }
         
         #region Behavious
@@ -132,7 +147,7 @@ namespace Luna.Core.Locomotion.Character
 
         private void Rotate(Vector2 direction)
         {
-            if (attackBehaviour.AttackIndex > 0)
+            if (attackBehaviour.attackIndex > 0)
                 return;
             
             // World space rotation:
@@ -261,7 +276,6 @@ namespace Luna.Core.Locomotion.Character
             {
                 if (context.started)
                 {
-                    Debug.Log("Extra Attack");
                     animator.SetBool("Extra Attack", true);
                 }
 
@@ -286,17 +300,18 @@ namespace Luna.Core.Locomotion.Character
                 {
                     var state = animator.GetCurrentAnimatorStateInfo(0);
                     var stateName = animator.GetCurrentStateName(0);
-                    Debug.Log("Attack Index: " + attackBehaviour.AttackIndex);
+                    Debug.Log("Attack Index: " + attackBehaviour.attackIndex);
                     animator.SetBool("Attack", true);
                     // _playableDirector.Play();
                     // _playableDirector.time = _markers[0].time;
                     // await UniTask.WaitForSeconds(0.1f); 
                     // await UniTask.NextFrame(); 
+                    
                     await UniTask.DelayFrame(5);
                     // animator.SetBool("Attack", false);
-                    Time.timeScale = 0.1f;
-                    await UniTask.WaitForSeconds(1f); 
-                    Time.timeScale = 1f;
+                    // Time.timeScale = 0.1f;
+                    // await UniTask.WaitForSeconds(1f); 
+                    // Time.timeScale = 1f;
                 }
 
                 if (context.canceled)
@@ -308,7 +323,7 @@ namespace Luna.Core.Locomotion.Character
 
         public void OnExtraAttack(InputAction.CallbackContext context)
         {
-
+            Debug.Log("Extra Attack");
         }
 
         public void OnInteract(InputAction.CallbackContext context)
@@ -398,6 +413,25 @@ namespace Luna.Core.Locomotion.Character
 
         #endregion
 
+        #region Collision Events
+        
+        private void OnCollisionEnter(Collision other)
+        {
+            Debug.Log("OnCollisionEnter");
+        }
+        
+        private void OnCollisionStay(Collision other)
+        {
+            // Debug.Log("OnCollisionStay");
+        }
+        
+        private void OnCollisionExit(Collision other)
+        {
+            Debug.Log("OnCollisionExit");
+        }
+
+        #endregion
+        
         #region Methods
 
         private void SetDirection(Vector2 direction)
@@ -428,6 +462,6 @@ namespace Luna.Core.Locomotion.Character
 
         #endregion
 
-
+        
     }
 }

@@ -2,6 +2,7 @@
 
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEditor;
 using UnityEngine;
 
@@ -44,7 +45,7 @@ public class TrimAnimationClipsMenuItem : MonoBehaviour
 
     }
     
-    static void HandleAnimationClip(AnimationClip theAnimation)
+    static void HandleAnimationClip(AnimationClip theAnimation, bool copy = true)
     {
         Debug.Log($"Handle {theAnimation}");
         
@@ -53,6 +54,7 @@ public class TrimAnimationClipsMenuItem : MonoBehaviour
             AssetDatabase.StartAssetEditing();
 
             var bindings = AnimationUtility.GetCurveBindings(theAnimation);
+            var newAnimation = new AnimationClip();
             foreach (var binding in bindings)
             {
                 var curve = AnimationUtility.GetEditorCurve(theAnimation, binding);
@@ -61,13 +63,30 @@ public class TrimAnimationClipsMenuItem : MonoBehaviour
                 //去除scale曲线
                 if (binding.propertyName.ToLower().Contains("scale"))
                     AnimationUtility.SetEditorCurve(theAnimation, binding, null);
+                
+                // 减少重复帧
+                var keysToRemove = new List<Keyframe>();
+                for (int i = 1, j = 0; i < keys.Length; i++)
+                {
+                    var keyframe = keys[i];
+                    
+                    if (Mathf.Approximately(keyframe.value, curve.keys[j].value) 
+                        // || Mathf.Abs(curve.keys[j].value / (keyFrame.value - curve.keys[j].value)) > 1.0 / 0.2
+                        )
+                    {
+                        // curve.RemoveKey(i);
+                        keysToRemove.Add(keyframe);
+                    }
+                    else j = i;
+                }
+                keys = keys.Except(keysToRemove).ToArray();
 
                 //浮点数精度压缩到f4
                 for (int i = 0; i < keys.Length; i++)
                 {
                     var keyFrame = keys[i];
                     
-                    keyFrame.value = float.Parse(keyFrame.value.ToString("F4"));
+                    keyFrame.value = float.Parse(keyFrame.value.ToString("F6"));
                     keyFrame.inTangent = float.Parse(keyFrame.inTangent.ToString("F4"));
                     keyFrame.outTangent = float.Parse(keyFrame.outTangent.ToString("F4"));
                     keyFrame.inWeight = float.Parse(keyFrame.inWeight.ToString("F4"));
@@ -75,23 +94,21 @@ public class TrimAnimationClipsMenuItem : MonoBehaviour
                     
                     keys[i] = keyFrame;
                 }
+                
                 curve.keys = keys;
-
-                // 减少重复帧
-                for (int i = 0, j = 0; i < curve.keys.Length; i++)
-                {
-                    var keyFrame = curve.keys[i];
-                    
-                    if (Mathf.Abs((keyFrame.value - curve.keys[j].value) / curve.keys[j].value) < 0.1 && i != 0)
-                        curve.RemoveKey(i);
-                    else j = i;
-                }
-
-
-                theAnimation.SetCurve(binding.path, binding.type, binding.propertyName, curve);
+                
+                if (copy) newAnimation.SetCurve(binding.path, binding.type, binding.propertyName, curve);
+                else theAnimation.SetCurve(binding.path, binding.type, binding.propertyName, curve);
             }
 
+            if (copy)
+            {
+                var path = AssetDatabase.GenerateUniqueAssetPath(AssetDatabase.GetAssetPath(theAnimation));
+                AssetDatabase.CreateAsset(newAnimation, path);
+            }
+            
             AssetDatabase.SaveAssets();
+            AssetDatabase.Refresh();
 
             Debug.Log($"{theAnimation} Done.");
         }
@@ -105,5 +122,6 @@ public class TrimAnimationClipsMenuItem : MonoBehaviour
         }
     }
 }
+
 
 #endif

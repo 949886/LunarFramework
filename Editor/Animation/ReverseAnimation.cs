@@ -53,23 +53,15 @@ public class ReverseAnimationClip : ScriptableWizard
 
     private void OnWizardCreate()
     {
-        string directoryPath =
-            Path.GetDirectoryName(AssetDatabase.GetAssetPath(Selection.activeObject));
-        string fileName =
-            Path.GetFileName(AssetDatabase.GetAssetPath(Selection.activeObject));
-        string fileExtension =
-            Path.GetExtension(AssetDatabase.GetAssetPath(Selection.activeObject));
+        string directoryPath = Path.GetDirectoryName(AssetDatabase.GetAssetPath(Selection.activeObject));
+        string fileName = Path.GetFileName(AssetDatabase.GetAssetPath(Selection.activeObject));
+        string fileExtension = Path.GetExtension(AssetDatabase.GetAssetPath(Selection.activeObject));
         fileName = fileName.Split('.')[0];
 
         string copiedFilePath = "";
         if (NewFileName != null && NewFileName != "")
-        {
             copiedFilePath = directoryPath + Path.DirectorySeparatorChar + NewFileName + fileExtension;
-        }
-        else
-        {
-            copiedFilePath = directoryPath + Path.DirectorySeparatorChar + fileName + "_Reversed" + fileExtension;
-        }
+        else copiedFilePath = directoryPath + Path.DirectorySeparatorChar + fileName + "_Reversed" + fileExtension;
 
         AnimationClip originalClip = GetSelectedClip();
 
@@ -77,10 +69,7 @@ public class ReverseAnimationClip : ScriptableWizard
 
         AnimationClip reversedClip = (AnimationClip)AssetDatabase.LoadAssetAtPath(copiedFilePath, typeof(AnimationClip));
 
-        if (originalClip == null)
-        {
-            return;
-        }
+        if (originalClip == null) return;
 
         float clipLength = originalClip.length;
         EditorCurveBinding[] curveBindings = AnimationUtility.GetCurveBindings(originalClip);
