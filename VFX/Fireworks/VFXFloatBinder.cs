@@ -1,3 +1,5 @@
+#if USE_VISUAL_EFFECT_GRAPH
+
 using UnityEngine;
 using UnityEngine.VFX;
 using UnityEngine.VFX.Utility;
@@ -29,3 +31,5 @@ namespace Pyro
         }
     }
 }
+
+#endif

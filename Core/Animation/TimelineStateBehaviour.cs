@@ -1,9 +1,7 @@
 ﻿// Created by LunarEclipse on 2024-01-11 22:35.
 
-using Luna.Extensions.Unity;
 using UnityEngine;
 using UnityEngine.Playables;
-using UnityEngine.Serialization;
 using UnityEngine.Timeline;
 
 namespace Luna.Core.Animation

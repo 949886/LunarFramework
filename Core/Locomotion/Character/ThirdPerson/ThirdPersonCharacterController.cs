@@ -62,7 +62,9 @@ namespace Luna.Core.Locomotion.Character
         
         private void Start()
         {
+#if UNITY_2022_3_OR_NEWER
             Physics.simulationMode = SimulationMode.Script;
+#endif
         }
 
         private void OnDisable()

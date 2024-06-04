@@ -1,3 +1,5 @@
+#if USE_VISUAL_EFFECT_GRAPH
+
 using UnityEngine;
 
 namespace Pyro
@@ -12,3 +14,5 @@ namespace Pyro
         [SerializeField] float _value;
     }
 }
+
+#endif
