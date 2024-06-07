@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace Luna.Extensions.Unity
 {
-    public static class ComponentExtension
+    public static class ComponentExtensions
     {
         public static void SetTransform(this Component gameObject, Transform newTransform)
         {

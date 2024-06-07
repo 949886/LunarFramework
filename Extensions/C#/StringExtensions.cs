@@ -12,11 +12,8 @@ using System.Collections.Generic;
 
 namespace Luna.Extensions
 {
-    public static class StringExtension
+    public static class StringExtensions
     {
-        public static void Test(this string str)
-        {
-
-        }
+        
     }
 }

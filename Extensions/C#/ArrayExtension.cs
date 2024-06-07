@@ -7,6 +7,8 @@
 //
 
 using System;
+using Sirenix.Utilities;
+using Unity.VisualScripting;
 
 namespace Luna.Extensions
 {

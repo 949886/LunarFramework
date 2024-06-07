@@ -1,5 +1,6 @@
 ﻿// Created by LunarEclipse on 2024-01-05 16:38.
-// From https://forum.unity.com/threads/current-animator-state-name.331803/
+
+#if UNITY_2021_3_OR_NEWER
 
 using System;
 using System.Reflection;
@@ -7,8 +8,10 @@ using UnityEngine;
 
 namespace Luna.Extensions.Unity
 {
-    public static class AnimatorExtension
+    public static class AnimatorExtensions
     {
+        // From https://forum.unity.com/threads/current-animator-state-name.331803/
+        
         /// <summary>Gets an instance method with single argument of type <typeparamref
         /// name="TArg0"/> and return type of <typeparamref name="TReturn"/> from <typeparamref
         /// name="TThis"/> and compiles it into a fast open delegate.</summary>
@@ -84,3 +87,5 @@ namespace Luna.Extensions.Unity
         }
     }
 }
+
+#endif
