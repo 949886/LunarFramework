@@ -1,52 +1,35 @@
 using System;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Playables;
 
-namespace UnityEngine.Timeline
+namespace Luna
 {
+    // The runtime instance of the VideoTrack. It is responsible for letting the VideoPlayableBehaviours
+    //  they need to start loading the video
     public sealed class VideoSchedulerPlayableBehaviour : PlayableBehaviour
     {
-		private IEnumerable<TimelineClip> m_Clips;
-        private PlayableDirector m_Director;
-
-        internal PlayableDirector director
-        {
-            get { return m_Director; }
-            set { m_Director = value; }
-        }
-
-        internal IEnumerable<TimelineClip> clips
-        {
-            get { return m_Clips; }
-            set { m_Clips = value; }
-        }
-
+        // Called every frame that the timeline is evaluated. This is called prior to
+        // PrepareFrame on any of its input playables.
         public override void PrepareFrame(Playable playable, FrameData info)
         {
-            if (m_Clips == null)
-                return;
-
-            int inputPort = 0;
-            foreach (TimelineClip clip in m_Clips)
+            // Searches for clips that are in the 'preload' area and prepares them for playback
+            var timelineTime = playable.GetGraph().GetRootPlayable(0).GetTime();
+            for (int i = 0; i < playable.GetInputCount(); i++)
             {
-				ScriptPlayable<VideoPlayableBehaviour> scriptPlayable =
-					(ScriptPlayable<VideoPlayableBehaviour>)playable.GetInput(inputPort);
+                if (playable.GetInput(i).GetPlayableType() != typeof(VideoPlayableBehaviour))
+                    continue;
 
-				VideoPlayableBehaviour videoPlayableBehaviour = scriptPlayable.GetBehaviour();
+                if (playable.GetInputWeight(i) <= 0.0f)
+                {
+                    ScriptPlayable<VideoPlayableBehaviour> scriptPlayable = (ScriptPlayable<VideoPlayableBehaviour>)playable.GetInput(i);
+                    VideoPlayableBehaviour videoPlayableBehaviour = scriptPlayable.GetBehaviour();
+                    double preloadTime = Math.Max(0.0, videoPlayableBehaviour.preloadTime);
+                    double clipStart = videoPlayableBehaviour.startTime;
 
-				if (videoPlayableBehaviour != null)
-				{
-					double preloadTime = Math.Max(0.0, videoPlayableBehaviour.preloadTime);
-					if (m_Director.time >= clip.start + clip.duration ||
-						m_Director.time <= clip.start - preloadTime)
-						videoPlayableBehaviour.StopVideo();
-					else if (m_Director.time > clip.start - preloadTime)
-						videoPlayableBehaviour.PrepareVideo();
-				}
-					
-                ++inputPort;
+                    if (timelineTime > clipStart - preloadTime && timelineTime <= clipStart)
+                        videoPlayableBehaviour.PrepareVideo();
+                }
             }
         }
-	}
+    }
 }

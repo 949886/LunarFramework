@@ -2,175 +2,153 @@ using UnityEngine;
 using UnityEngine.Playables;
 using UnityEngine.Video;
 
-namespace UnityEngine.Timeline
+namespace Luna
 {
-	public class VideoPlayableBehaviour : PlayableBehaviour
+    // The runtime instance of a video clip player in Timeline.
+    public sealed class VideoPlayableBehaviour : PlayableBehaviour
     {
         public VideoPlayer videoPlayer;
-		public VideoClip videoClip;
-        public bool mute = false;
-        public bool loop = true;
-        public double preloadTime = 0.3;
-        public double clipInTime = 0.0;
 
-        private bool playedOnce = false;
-        private bool preparing = false;
+        public VideoPlayableAsset asset;
 
-        public void PrepareVideo()
+        public double preloadTime;
+        public double clipInTime;
+        public double startTime;
+
+        private bool preparing;
+        
+        // Called each frame the clip is active.
+        //
+        public override void PrepareFrame(Playable playable, FrameData info)
         {
-            if (videoPlayer == null || videoClip == null)
+            if (videoPlayer == null)
                 return;
 
-            videoPlayer.targetCameraAlpha = 0.0f;
+            // Pause or Play the video to match whether the graph is being scrubbed or playing
+            //  If we need to hold the last frame, this will treat the last frame as a pause
+            bool shouldBePlaying = info.evaluationType == FrameData.EvaluationType.Playback;
+            if (!videoPlayer.isLooping && playable.GetTime() >= videoPlayer.clip.length)
+                shouldBePlaying = false;
 
-            if (videoPlayer.clip != videoClip)
-                StopVideo();
-
-            if (videoPlayer.isPrepared || preparing)
-                return;
-
-            videoPlayer.source = VideoSource.VideoClip;
-            videoPlayer.clip = videoClip;
-            videoPlayer.playOnAwake = false;
-            videoPlayer.waitForFirstFrame = true;
-		    videoPlayer.isLooping = loop;
-
-            for (ushort i = 0; i < videoClip.audioTrackCount; ++i)
+            if (shouldBePlaying)
             {
-                if (videoPlayer.audioOutputMode == VideoAudioOutputMode.Direct)
-                    videoPlayer.SetDirectAudioMute(i, mute || !Application.isPlaying);
-                else if (videoPlayer.audioOutputMode == VideoAudioOutputMode.AudioSource)
-                {
-                    AudioSource audioSource = videoPlayer.GetTargetAudioSource(i);
-                    if (audioSource != null)
-                        audioSource.mute = mute || !Application.isPlaying;
-                }
+                // this will use the timeline time to prevent drift
+                videoPlayer.timeReference = VideoTimeReference.ExternalTime;
+                if (!videoPlayer.isPlaying)
+                    videoPlayer.Play();
+                videoPlayer.externalReferenceTime = playable.GetTime() / videoPlayer.playbackSpeed;
+            }
+            else
+            {
+                videoPlayer.timeReference = VideoTimeReference.Freerun;
+                if (!videoPlayer.isPaused)
+                    videoPlayer.Pause();
+                SyncVideoToPlayable(playable);
             }
 
-            videoPlayer.loopPointReached += LoopPointReached;
-            videoPlayer.time = clipInTime;
-            videoPlayer.Prepare();
-            preparing = true;
+            // use the accumulated blend value to set the alpha and the audio volume
+            videoPlayer.targetCameraAlpha = info.effectiveWeight;
+            if (videoPlayer.audioOutputMode == VideoAudioOutputMode.Direct)
+            {
+                for (ushort i = 0; i < videoPlayer.clip.audioTrackCount; ++i)
+                    videoPlayer.SetDirectAudioVolume(i, info.effectiveWeight);
+            }
         }
 
-        void LoopPointReached(VideoPlayer vp)
-        {
-            playedOnce = !loop;
-        }
-
-        public override void PrepareFrame(Playable playable, FrameData info)
-		{
-			if (videoPlayer == null || videoClip == null)
-				return;
-
-            videoPlayer.timeReference = Application.isPlaying ? VideoTimeReference.ExternalTime :
-                                                                VideoTimeReference.Freerun;
-																
-		    if (videoPlayer.isPlaying && Application.isPlaying)
-			    videoPlayer.externalReferenceTime = playable.GetTime();
-            else if (!Application.isPlaying)
-                SyncVideoToPlayable(playable);
-        }
-
+        // Called when the clip becomes active.
         public override void OnBehaviourPlay(Playable playable, FrameData info)
         {
             if (videoPlayer == null)
                 return;
 
-            if (!playedOnce)
-            {
-                PlayVideo();
-                SyncVideoToPlayable(playable);
-            }
-        }
-
-        public override void OnBehaviourPause(Playable playable, FrameData info)
-        {
-            if (videoPlayer == null)
-                return;
-
-            if (Application.isPlaying)
-                PauseVideo();
-            else
-                StopVideo();
-        }
-
-		public override void ProcessFrame(Playable playable, FrameData info, object playerData)
-		{
-			if (videoPlayer == null || videoPlayer.clip == null)
-				return;
-
-            videoPlayer.targetCameraAlpha = info.weight;
-
-		    if (Application.isPlaying)
-		    {
-		        for (ushort i = 0; i < videoPlayer.clip.audioTrackCount; ++i)
-		        {
-		            if (videoPlayer.audioOutputMode == VideoAudioOutputMode.Direct)
-		                videoPlayer.SetDirectAudioVolume(i, info.weight);
-		            else if (videoPlayer.audioOutputMode == VideoAudioOutputMode.AudioSource)
-		            {
-		                AudioSource audioSource = videoPlayer.GetTargetAudioSource(i);
-		                if (audioSource != null)
-		                    audioSource.volume = info.weight;
-		            }
-		        }
-		    }
-		}
-
-		public override void OnGraphStart(Playable playable)
-		{
-		    playedOnce = false;
-		}
-
-		public override void OnGraphStop(Playable playable)
-		{
-		    if (!Application.isPlaying)
-		        StopVideo();
-		}
-
-        public override void OnPlayableDestroy(Playable playable)
-        {
-            StopVideo();
-        }
-
-        public void PlayVideo()
-        {
-            if (videoPlayer == null)
-                return;
-
+            SyncVideoToPlayable(playable);
+            videoPlayer.playbackSpeed = Mathf.Clamp(info.effectiveSpeed, 1 / 10f, 10f);
             videoPlayer.Play();
             preparing = false;
-
-            if (!Application.isPlaying)
-                PauseVideo();
         }
 
-        public void PauseVideo()
+        // Called when the clip becomes inactive OR the timeline is 'paused'
+        public override void OnBehaviourPause(Playable playable, FrameData info)
         {
+            Debug.Log("OnBehaviourPause");
+            
             if (videoPlayer == null)
                 return;
 
-            videoPlayer.Pause();
             preparing = false;
+
+            // The effective weight will be greater than 0 if the graph is paused and the playhead is still on this clip.
+            if (info.effectiveWeight <= 0)
+                videoPlayer.Stop();
+            else videoPlayer.Pause();
+            
+            // When the clip is reach the end.
+            var duration = playable.GetDuration();
+            var time = playable.GetTime();
+            var count = time + info.deltaTime;
+ 
+            if ((info.effectivePlayState == PlayState.Paused && count > duration) || Mathf.Approximately((float)time, (float)duration))
+            {
+                Debug.Log("Clip done!");
+                
+                if (asset.clearRenderTextureOnEnd)
+                {
+                    ClearRenderTexture(asset.targetTexture);
+                }
+            }
+        }
+        
+        public override void OnGraphStop(Playable playable)
+        {
+            Debug.Log("Graph stopped.");
         }
 
-        public void StopVideo()
+        // Called when the playable is destroyed.
+        public override void OnPlayableDestroy(Playable playable)
         {
-            if (videoPlayer == null)
+            if (videoPlayer != null)
+            {
+                videoPlayer.Stop();
+                if (Application.isPlaying)
+                    Object.Destroy(videoPlayer.gameObject);
+                else
+                    Object.DestroyImmediate(videoPlayer.gameObject);
+            }
+        }
+        
+        // Called by the mixer (VideoSchedulerPlayableBehaviour) when this is nearly active to
+        // give the video time to load.
+        public void PrepareVideo()
+        {
+            if (videoPlayer == null || videoPlayer.isPrepared || preparing)
                 return;
 
-            playedOnce = false;
-            videoPlayer.Stop();
-            preparing = false;
+            videoPlayer.targetCameraAlpha = 0.0f;
+            videoPlayer.time = clipInTime;
+            videoPlayer.Prepare();
+            preparing = true;
         }
 
+
+        // Syncs the video player time to playable time
         private void SyncVideoToPlayable(Playable playable)
         {
             if (videoPlayer == null || videoPlayer.clip == null)
                 return;
 
-            videoPlayer.time = (clipInTime + (playable.GetTime() * videoPlayer.playbackSpeed)) % videoPlayer.clip.length;
+            if (videoPlayer.isLooping)
+                videoPlayer.time = playable.GetTime() % videoPlayer.clip.length;
+            else
+                videoPlayer.time = System.Math.Min(playable.GetTime(), videoPlayer.clip.length);
+        }
+        
+        private void ClearRenderTexture(RenderTexture renderTexture)
+        {
+            if (renderTexture == null) return;
+            
+            RenderTexture.active = renderTexture;
+            GL.Clear(true, true, Color.clear);
+            RenderTexture.active = null;
         }
     }
 }
