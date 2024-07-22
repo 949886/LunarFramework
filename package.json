@@ -1,12 +1,12 @@
 {  
-  "name": "cc.lunareclipse.unilities",
-  "displayName": "Unilities",
-  "description": "A collection of Unity utilities and useful scripts.",
+  "name": "cc.lunareclipse.lunarfamework",
+  "displayName": "Lunar Framework",
+  "description": "Unity Framework for Game Development by Lunar Eclipse",
   "version": "1.0.0",
   "unity": "2021.3",
   "author": {
     "name": "Lunar Eclipse",
-    "email": "yae-sakura@outlook.com",
+    "email": "nyaatuki@gmail.com",
     "url": "https://lunareclipse.cc"
   },
   "dependencies": {
