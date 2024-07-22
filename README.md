@@ -1,4 +1,4 @@
-# LunarFramework
+# Lunar Framework
 
 ![](https://img.shields.io/badge/Unity-2021.3-green.svg?style=flat-square)
 
@@ -21,10 +21,10 @@ public void OnSettingsButtonClicked()
 
 `Navigator.Push` method will push a `Widget` to the top of the navigation stack and the widget will be instantiated and added to the root canvas.
 
-This method is a generic method that takes a type of subclass of `Widget` class as a parameter.
+This generic method takes a type of subclass of the `Widget` class as a parameter.
 
 > [!NOTE]  
-> Any prefab with Widget component will be registered in the Widgets prefab database automatically.  
+> Any prefab with a `Widget` component will automatically be registered in the Widgets prefab database.  
 > A widget type should only have one prefab that corresponds to it.
 
 
@@ -48,7 +48,7 @@ public void OnBlueButtonClick()
       // Edit roulette
       Navigator.Push<RouletteGameView>(async (view) =>
       {
-            // You can use UniTask to pass data at next frame
+            // You can use UniTask to pass data at the next frame
             await UniTask.NextFrame();
             view.RouletteData = Data;
       });
@@ -68,7 +68,7 @@ public async void OnClickSettingsButton()
 {  
     var data = await Navigator.Push<RouletteSettingsView>() as string;
     
-    // Following code will be executed after SettingsView pop.
+    // Following code will be executed after the SettingsView pop.
     HandleSettingsData(data);
     EventSystem.current.SetSelectedGameObject(settingsButton.gameObject);  
 }
@@ -81,7 +81,7 @@ public async void OnClickSettingsButton()
 ```cs
 public async void OnEditButtonClick()
 {
-      // Create new roulette and let user to edit it.
+      // Create a new roulette and let the user edit it.
       var roulette = new RouletteData();
       roulette.title = "New Roulette";
       roulette.sectors = new List<RouletteSector>();
@@ -104,7 +104,7 @@ public async void OnEditButtonClick()
 ```
 
 
-#### Compability
+#### Compatibility
 
 You can have a new navigator anywhere with a game object as root to adapt old code.
 
