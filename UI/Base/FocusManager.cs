@@ -12,6 +12,12 @@ namespace Luna.UI
         // KeyHold,
     }
     
+    public enum InputEvent
+    {
+        Start,
+        End,
+    }
+    
     public enum KeyEventResult
     {
         /// The key event has been handled, and the event should not be propagated to
