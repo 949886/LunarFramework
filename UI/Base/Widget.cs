@@ -16,7 +16,7 @@ namespace Luna.UI
         protected Widget() {}
         
         public static T Create<T>(Transform parent = null) where T : Widget
-        { 
+        {
             // Find the widget in the database.
             var widget = Widget.Dictionary[typeof(T)];
             if (widget != null)

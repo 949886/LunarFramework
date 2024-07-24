@@ -5,6 +5,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 namespace Luna.UI.Navigation
@@ -20,13 +21,14 @@ namespace Luna.UI.Navigation
         public Canvas canvas; // Reference to the Canvas
         public GameObject rootWidget; // The root widget of the game
         
+        public bool focusAutomatically = true; // Focus on last selected object when a new widget is popped
         public bool escToPop = false; // Pop the top widget when the escape key is pressed
         
         private readonly Stack<GameObject> _widgetStack = new();
         // private readonly Stack<GameObject> _widgetHistory = new();
         private readonly Stack<Route> _routeStack = new();
         
-        private bool isDontDestroyOnLoad = false;
+        private bool _isDontDestroyOnLoad = false;
         
         
         // Load the Navigator instance on startup if it doesn't exist
@@ -38,7 +40,7 @@ namespace Luna.UI.Navigation
                 GameObject navigator = new GameObject("UI Navigator");
                 Instance = navigator.AddComponent<Navigator>();
                 DontDestroyOnLoad(navigator);
-                Instance.isDontDestroyOnLoad = true;
+                Instance._isDontDestroyOnLoad = true;
             }
         }
 
@@ -182,6 +184,7 @@ namespace Luna.UI.Navigation
         protected Task<dynamic> _Push<T>(Action<T> callback = null) where T : Widget
         {
             var route = new Route();
+            route.lastSelected = EventSystem.current.currentSelectedGameObject;
             
             if (_widgetStack.Count > 0)
                 _widgetStack.Peek().SetActive(false);
@@ -226,6 +229,10 @@ namespace Luna.UI.Navigation
                 // Show the previous widget
                 if (_widgetStack.Count > 0)
                     _widgetStack.Peek().SetActive(true);
+                
+                // Focus on the last selected object
+                if (focusAutomatically && route.lastSelected != null)
+                    EventSystem.current.SetSelectedGameObject(route.lastSelected);
             }
         }
 

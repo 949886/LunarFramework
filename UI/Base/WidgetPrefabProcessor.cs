@@ -6,7 +6,7 @@ using UnityEditor;
 
 #if UNITY_EDITOR
 
-public class StatefulWidgetPrefabProcessor : AssetPostprocessor
+public class WidgetPrefabProcessor : AssetPostprocessor
 {
     // Find all prefabs with StatefulWidget component and save them to a scriptable object.
     static void OnPostprocessAllAssets(string[] importedAssets, string[] deletedAssets, string[] movedAssets, string[] movedFromAssetPaths, bool didDomainReload)

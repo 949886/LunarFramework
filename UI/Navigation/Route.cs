@@ -2,6 +2,7 @@
 
 using System;
 using System.Threading.Tasks;
+using UnityEngine;
 
 namespace Luna.UI.Navigation
 {
@@ -11,6 +12,7 @@ namespace Luna.UI.Navigation
         public Action<Widget> onPopped;
 
         // public dynamic pendingResult;
+        public GameObject lastSelected;
         
         internal Task<dynamic> Popped => popCompleter.Task;
         internal readonly TaskCompletionSource<dynamic> popCompleter = new();
