@@ -38,7 +38,6 @@ public class EmissionModifier : MonoBehaviour
 
     public void OnIntensityChange() 
     {
-        
         if (meshRenderer == null)
             ChangeColor(GetComponent<MeshRenderer>(), color, intensity);    
         else ChangeColor(meshRenderer, color, intensity);

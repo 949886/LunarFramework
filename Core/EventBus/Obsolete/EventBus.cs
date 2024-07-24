@@ -8,10 +8,7 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
-using System.Threading;
-using Luna.Core.Dispatch;
 using Luna.Extensions;
 
 #if UNITY
@@ -20,6 +17,7 @@ using UnityEngine;
 
 namespace Luna.Core.Event
 {
+    [Obsolete("Use Events instead due to performance issues.")]
     public class EventBus
     {
         public static EventBus Default = new EventBus();
@@ -52,8 +50,14 @@ namespace Luna.Core.Event
                     var parameters = method.GetParameters();
                     if (parameters.Length == 1)
                     {
-                        var action = method.CreateDelegate(listener);
-
+                        // var action = method.CreateDelegate(listener);
+                        // var action = method.ToLambda<IMessage>(listener);
+                        var fastMethod = new FastMethodInfo(method);
+                        var action = new Action<IMessage>(message =>
+                        {
+                            fastMethod.Invoke(listener, message);
+                        });
+                        
                         if (!eventHandlers.ContainsKey(parameters[0].ParameterType))
                             eventHandlers[parameters[0].ParameterType] = new List<Subscription>();
                         var subscription = new Subscription(listener, parameters[0].ParameterType, subscribeInfo, action);
@@ -87,7 +91,7 @@ namespace Luna.Core.Event
                         var type = parameters[0].ParameterType;
 
                         if (eventHandlers.TryGetValue(type, out var handler))
-                            handler.RemoveAll(item => item.Handler == action);
+                            handler.RemoveAll(item => item.Subscriber == listener);
                     }
                     else throw new Exception("Subscribe method must have only one parameter!");
                 }
@@ -98,7 +102,7 @@ namespace Luna.Core.Event
             eventHandlers.Clear();
         }
 
-        public void Post(object newEvent)
+        public void Post(IMessage newEvent)
         {
             var subscriptions = eventHandlers.Get(newEvent.GetType());
             if (subscriptions == null)

@@ -1,6 +1,6 @@
 ﻿// Created by LunarEclipse on 2024-1-14 11:7.
 
-namespace Luna.Core.Event.Arguments
+namespace Luna.Arguments
 {
     public class AttackArgs
     {
