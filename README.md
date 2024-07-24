@@ -2,10 +2,27 @@
 
 ![](https://img.shields.io/badge/Unity-2021.3-green.svg?style=flat-square)
 
+Lunar Framework is a set of tools and patterns for Unity3D development. It's designed to make the development process easier and more efficient.
 
+## Table of Contents
 
 - [UI](#UI)
   - [UI Navigation](#navigation)
+- [Tools](#tools)
+  - [Object Pool](#object-pool)
+- [Scripting](#scripting)
+  - [Attributes](#attributes)
+
+
+<!--
+
+## Gameplay
+
+### Third Person 
+
+-->
+
+
 ## UI
 
 ### Navigation
@@ -114,3 +131,94 @@ void Start()
       Navigator.Create(gameObject);
 }
 ```
+
+
+## Tools
+
+### Object Pool
+
+#### Get an object from the pool
+
+You can get an object from the pool by calling the `ObjectPool.Get` method easily.  
+The method will return an object from the pool if there is an available **inactive** object in the pool.
+Otherwise, it will instantiate a new object from the prefab.
+
+```csharp
+private void Shoot(GameObject bulletPrefab)
+{
+  GameObject bulletObject = ObjectPool.Get(bulletPrefab);
+  bulletObject.SetActive(true);
+  
+  // align to gun barrel/muzzle position
+  bulletObject.transform.SetPositionAndRotation(muzzlePosition.position, muzzlePosition.rotation);
+  
+  // move projectile forward
+  var rigidbody = bulletObject.GetComponent<Rigidbody>();
+  rigidbody.velocity = Vector3.zero;
+  rigidbody.angularVelocity = Vector3.zero;
+  rigidbody.AddForce(bulletObject.transform.forward * muzzleVelocity, ForceMode.Acceleration);
+  
+  // turn off after a few seconds
+  ExampleProjectile p = bulletObject.GetComponent<ExampleProjectile>();
+  p?.Deactivate();
+}
+```
+
+## Scripting
+
+### Attributes
+
+**`OnChanged`**
+
+This attribute is used to monitor the changes of a field in Unity Editor. The method will be invoked when the field is changed.
+It will add a callback to the field. The callback will be invoked when the field value is changed.
+
+```csharp
+// Change the color of the mesh renderer when the intensity is changed.
+
+[SerializeField, OnChanged(nameof(OnColorChange))]
+public Color color;
+
+public void OnColorChange() 
+{
+    if (meshRenderer == null)
+        ChangeColor(GetComponent<MeshRenderer>(), color, intensity);    
+    else ChangeColor(meshRenderer, color, intensity);
+}
+
+private void ChangeColor(MeshRenderer meshRenderer, Color color, float intensity)
+{
+    foreach (var material in meshRenderer.materials)
+        if (material.IsKeywordEnabled("_EMISSION"))
+            material.SetColor(PropertyName, color * intensity);
+}
+```
+
+
+<!--
+
+## Event
+
+Define an event in a class.
+```cs
+public static Event TestEvent = new();
+public static Event TestFilteredEvent = new() {
+    filter = (sender, receiver, args) => true
+};
+public static Event<(string a, string b)> TestArgumentEvent = new();
+```
+
+```csharp
+void OnEvent(object sender, (string a, string b) args) { }
+
+// Subscribe
+TestArgumentEvent += OnEvent;
+
+// Unsubscribe 
+TestArgumentEvent -= OnEvent;
+```
+
+
+
+-->
+
