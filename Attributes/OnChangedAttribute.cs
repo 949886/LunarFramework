@@ -11,13 +11,11 @@ using UnityEditor;
 // From: https://stackoverflow.com/questions/48223969/onvaluechanged-for-fields-in-a-scriptable-object
 public class OnChangedAttribute : PropertyAttribute
 {
-    #if UNITY_EDITOR
     public string methodName;
     public OnChangedAttribute(string methodNameNoArguments)
     {
         methodName = methodNameNoArguments;
     }
-    #endif
 }
 
 #if UNITY_EDITOR
