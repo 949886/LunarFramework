@@ -56,6 +56,23 @@ namespace Luna.UI
             return handler.Task;
         }
 
+        public static Task<IList<GameObject>> Load(params string[] labels)
+        {
+            var key = string.Join(",", labels);
+            if (_labelHandlers.TryGetValue(key, out var cachedHandler))
+                return cachedHandler.Task;
+            
+            var handler = Addressables.LoadAssetsAsync<GameObject>(new List<string>(labels), null, Addressables.MergeMode.Intersection);
+            var locations = Addressables.LoadResourceLocationsAsync(labels);
+            handler.Completed += op =>
+            {
+                foreach (var obj in op.Result)
+                    Debug.Log($"[Widget] Loaded asset: {obj.name}");
+            };
+            _labelHandlers.Add(key, handler);
+            return handler.Task;
+        }
+
         public static void Unload<T>() where T : Widget
         {
             var key = typeof(T);
@@ -75,6 +92,17 @@ namespace Luna.UI
                 _labelHandlers.Remove(label);
             }
             else Debug.LogWarning($"[Widget] Label not found: {label}");
+        }
+        
+        public static void Unload(params string[] labels)
+        {
+            var key = string.Join(",", labels);
+            if (_labelHandlers.ContainsKey(key))
+            {
+                Addressables.Release(_labelHandlers[key]);
+                _labelHandlers.Remove(key);
+            }
+            else Debug.LogWarning($"[Widget] Label not found: {key}");
         }
         
         public static string GetAddressableKey<T>() where T : Widget
