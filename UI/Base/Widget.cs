@@ -1,11 +1,11 @@
 // Created by LunarEclipse on 2024-6-21 3:15.
 
-using System;
 using UnityEngine;
-using UnityEngine.InputSystem;
-using UnityEngine.InputSystem.Controls;
-using UnityEngine.InputSystem.LowLevel;
-using UnityEngine.InputSystem.Utilities;
+
+#if USE_ADDRESSABLES
+using System.Threading.Tasks;
+using UnityEngine.AddressableAssets;
+#endif
 
 namespace Luna.UI
 {
@@ -15,7 +15,51 @@ namespace Luna.UI
         
         protected Widget() {}
         
-        public static T Create<T>(Transform parent = null) where T : Widget
+#if USE_ADDRESSABLES
+        public static T New<T>(Transform parent = null) where T : Widget
+        {
+            var key = (typeof(T).Namespace ?? "global") + "." + typeof(T).Name;
+            var handler = Addressables.LoadAssetAsync<GameObject>(key);
+            var prefab = handler.WaitForCompletion();
+            if (prefab == null)
+            {
+                var newWidget = new GameObject(typeof(T).Name).AddComponent<T>();
+                newWidget.transform.SetParent(parent, false);
+                return newWidget;
+            }
+            else
+            {
+                var widget = Instantiate(prefab, parent).GetComponent<T>();
+                widget.transform.SetParent(parent, false);
+                return widget;
+            }
+        }
+        
+        public static Task<T> NewAsync<T>(Transform parent = null) where T : Widget
+        {
+            var tcs = new TaskCompletionSource<T>();
+            
+            var key = (typeof(T).Namespace ?? "global") + "." + typeof(T).Name;
+            var handler = Addressables.LoadAssetAsync<GameObject>(key);
+            handler.Completed += op =>
+            {
+                if (op.Result == null)
+                {
+                    var newWidget = new GameObject(typeof(T).Name).AddComponent<T>();
+                    newWidget.transform.SetParent(parent, false);
+                    tcs.SetResult(newWidget);
+                }
+                else
+                {
+                    var widget = Instantiate(op.Result, parent).GetComponent<T>();
+                    widget.transform.SetParent(parent, false);
+                    tcs.SetResult(widget);
+                }
+            };
+            return tcs.Task;
+        }
+#else
+        public static T New<T>(Transform parent = null) where T : Widget
         {
             // Find the widget in the database.
             var widget = Widget.Dictionary[typeof(T)];
@@ -27,43 +71,6 @@ namespace Luna.UI
             newWidget.transform.SetParent(parent, false);
             return newWidget;
         }
-        
-        // protected virtual void OnEnable()
-        // {
-        //     UnityEngine.InputSystem.InputSystem.onEvent += OnInputEvent;
-        // }
-        //
-        // protected virtual void OnDisable()
-        // {
-        //     UnityEngine.InputSystem.InputSystem.onEvent -= OnInputEvent;
-        // }
-        //
-        // protected virtual KeyEventResult OnKey(KeyControl keyCode, KeyEvent keyEvent)
-        // {
-        //     return KeyEventResult.Unhandled;
-        // }
-        //
-        // private void OnInputEvent(InputEventPtr eventPtr, InputDevice device)
-        // {
-        //     // Debug.Log(eventPtr);
-        //     if (!eventPtr.IsA<StateEvent>() && !eventPtr.IsA<DeltaStateEvent>())
-        //         return;
-        //
-        //     foreach (var control in eventPtr.EnumerateChangedControls())
-        //     {
-        //         // Debug.Log(control); 
-        //         // Debug.Log(control.IsPressed());
-        //         // Debug.Log(control.IsActuated());
-        //         
-        //         if (control is KeyControl keyControl)
-        //         {
-        //             var result = OnKey(keyControl, control.IsPressed() ? KeyEvent.KeyUp : KeyEvent.KeyDown);
-        //             if (result == KeyEventResult.Handled)
-        //             {
-        //                 eventPtr.handled = true;
-        //             }
-        //         }
-        //     }
-        // }
+#endif
     }
 }

@@ -2,9 +2,10 @@
     "name": "Luna.Editor",
     "rootNamespace": "",
     "references": [
-        "Luna",
+        "GUID:1ce3b06d7c665e742aecb3f4ff333a4b",
+        "GUID:f06555f75b070af458a003d92f9efb00",
         "GUID:02f771204943f4a40949438e873e3eff",
-        "GUID:f06555f75b070af458a003d92f9efb00"
+        "GUID:69448af7b92c7f342b298e06a37122aa"
     ],
     "includePlatforms": [
         "Editor"
@@ -15,6 +16,12 @@
     "precompiledReferences": [],
     "autoReferenced": true,
     "defineConstraints": [],
-    "versionDefines": [],
+    "versionDefines": [
+        {
+            "name": "com.unity.addressables",
+            "expression": "1",
+            "define": "USE_ADDRESSABLES"
+        }
+    ],
     "noEngineReferences": false
 }

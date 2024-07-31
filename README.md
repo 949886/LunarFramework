@@ -41,8 +41,9 @@ public void OnSettingsButtonClicked()
 This generic method takes a type of subclass of the `Widget` class as a parameter.
 
 > [!NOTE]  
-> Any prefab with a `Widget` component will automatically be registered in the Widgets prefab database.  
-> A widget type should only have one prefab that corresponds to it.
+> **A widget type should only have one prefab that corresponds to it.**  
+> Any prefab with a `Widget` component will automatically be registered in the Widgets prefab database
+> (if addressables package is installed, the prefab will be registered as an addressable asset, otherwise it will be registered as a scriptable object resource).
 
 
 #### Pop a widget

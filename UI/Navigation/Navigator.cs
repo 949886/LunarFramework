@@ -161,6 +161,15 @@ namespace Luna.UI.Navigation
             Instance._Pop(0);
         }
         
+        /// <summary>
+        /// Pop the top widget from the stack with a result.
+        /// </summary>
+        /// <param name="result">
+        /// The result to be passed to the previous widget.
+        /// </param>
+        /// <typeparam name="T">
+        /// The type of the result to be passed to the previous widget.
+        /// </typeparam>
         public static void Pop<T>(T result = default)
         {
             Instance._Pop(result);
@@ -181,14 +190,48 @@ namespace Luna.UI.Navigation
             return newWidget;
         }
         
-        protected Task<dynamic> _Push<T>(Action<T> callback = null) where T : Widget
+        protected async Task<dynamic> _Push<T>(Action<T> callback = null) where T : Widget
         {
             var route = new Route();
             route.lastSelected = EventSystem.current.currentSelectedGameObject;
             
             if (_widgetStack.Count > 0)
                 _widgetStack.Peek().SetActive(false);
+             
+#if USE_ADDRESSABLES
             
+            // Load the widget prefab from addressables.
+            var widgetPrefab = Widget.Load<T>();
+            if (widgetPrefab == null)
+            {
+                Debug.LogError($"[Navigator] Widget of type {typeof(T)} not found.");
+                return route.Popped;
+            }
+            
+            widgetPrefab.SetActive(false);
+                
+            // Instantiating the widget.
+            // Widget will execute Awake method.
+            var newWidget = Instantiate(widgetPrefab, canvas.transform);
+            _widgetStack.Push(newWidget);
+            _routeStack.Push(route);
+                
+            // Executing the callback.
+            if (callback is not null)
+                callback.Invoke(newWidget.GetComponent<T>());
+                
+            // Setting widget active.
+            // Widget will execute OnEnable and Start methods.
+            newWidget.SetActive(true);
+            widgetPrefab.SetActive(true);
+
+            // Wait for the widget to be popped and release the addressable asset.
+            var result = await route.Popped;
+            Widget.Unload<T>();
+            return result;
+            
+#else // USE SCRIPTABLE OBJECT
+
             if (Widget.Dictionary.TryGetValue(typeof(T), out GameObject widgetPrefab))
             {
                 widgetPrefab.SetActive(false);
@@ -207,10 +250,11 @@ namespace Luna.UI.Navigation
                 // Widget will execute OnEnable and Start methods.
                 newWidget.SetActive(true);
                 widgetPrefab.SetActive(true);
-            }
+            }  
             else Debug.LogError($"[Navigator] Widget of type {typeof(T)} not found.");
-            
             return route.Popped;
+            
+#endif
         }
 
         protected void _Pop<T>(T result = default)
