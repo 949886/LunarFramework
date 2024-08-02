@@ -190,6 +190,8 @@ namespace Luna.UI.Navigation
             return newWidget;
         }
         
+        
+#if USE_ADDRESSABLES
         protected async Task<dynamic> _Push<T>(Action<T> callback = null) where T : Widget
         {
             var route = new Route();
@@ -197,8 +199,6 @@ namespace Luna.UI.Navigation
             
             if (_widgetStack.Count > 0)
                 _widgetStack.Peek().SetActive(false);
-             
-#if USE_ADDRESSABLES
             
             // Load the widget prefab from addressables.
             var widgetPrefab = Widget.Load<T>();
@@ -229,8 +229,15 @@ namespace Luna.UI.Navigation
             var result = await route.Popped;
             Widget.Unload<T>();
             return result;
-            
+        }
 #else // USE SCRIPTABLE OBJECT
+        protected Task<dynamic> _Push<T>(Action<T> callback = null) where T : Widget
+        {
+            var route = new Route();
+            route.lastSelected = EventSystem.current.currentSelectedGameObject;
+            
+            if (_widgetStack.Count > 0)
+                _widgetStack.Peek().SetActive(false);
 
             if (Widget.Dictionary.TryGetValue(typeof(T), out GameObject widgetPrefab))
             {
@@ -253,9 +260,9 @@ namespace Luna.UI.Navigation
             }  
             else Debug.LogError($"[Navigator] Widget of type {typeof(T)} not found.");
             return route.Popped;
-            
-#endif
         }
+#endif
+        
 
         protected void _Pop<T>(T result = default)
         {

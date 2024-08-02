@@ -1,10 +1,10 @@
 ﻿// Created by LunarEclipse on 2024-6-19 0:40.
 
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
 #if USE_ADDRESSABLES
-using System;
 using UnityEngine.AddressableAssets;
 using System.Threading.Tasks;
 using UnityEngine.ResourceManagement.AsyncOperations;
@@ -110,15 +110,14 @@ namespace Luna.UI
             return (typeof(T).Namespace ?? "global") + "." + typeof(T).Name;
         }
 #else
+        public const string WIDGETS_DB_FILE_NAME = "Widgets.g";
+        
         public static List<GameObject> All { get; private set; } = new ();
         public static Dictionary<Type, GameObject> Dictionary { get; private set; } = new ();
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
         private static void Initialize()
         {
-            // Widget database file name
-            const string WIDGETS_DB_FILE_NAME = "Widgets.g";
-            
             // Find all Widget in the project at startup.
             // Load widgets scriptable object
             var widgets = Resources.Load<Widgets>(WIDGETS_DB_FILE_NAME);
