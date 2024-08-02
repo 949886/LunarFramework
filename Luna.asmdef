@@ -58,7 +58,7 @@
         },
         {
             "name": "com.unity.addressables",
-            "expression": "1",
+            "expression": "3",
             "define": "USE_ADDRESSABLES"
         }
     ],
