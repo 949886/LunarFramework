@@ -8,6 +8,7 @@ Lunar Framework is a set of tools and patterns for Unity3D development. It's des
 
 - [UI](#UI)
   - [UI Navigation](#navigation)
+- [Event](#event)
 - [Tools](#tools)
   - [Object Pool](#object-pool)
 - [Scripting](#scripting)
@@ -134,6 +135,65 @@ void Start()
 ```
 
 
+
+## Event
+
+Define some events in a class as static fields.
+
+```cs
+public static class MyEvents
+{
+    public static Event TestEvent = new();
+    public static Event<(string a, string b)> TestArgumentEvent = new();
+    public static Event<(string a, string b)> TestFilteredEvent = new() {
+        filter = (sender, receiver, args) => false
+    };
+}
+```
+
+Subscribe and unsubscribe to the event in a class.
+
+```csharp
+public class EventSubscriber : MonoBehaviour
+{
+    private void OnEnable()
+    {
+        MyEvents.TestEvent += OnEvent;
+        MyEvents.TestArgumentEvent += OnEvent;
+        MyEvents.TestFilteredEvent += OnEvent;
+    }
+    
+    private void OnDisable()
+    {
+        MyEvents.TestEvent -= OnEvent;
+        MyEvents.TestArgumentEvent -= OnEvent;
+        MyEvents.TestFilteredEvent -= OnEvent;
+    }
+
+    private void OnEvent(object sender) { }
+    private void OnEvent(object sender, (string a, string b) args) { }
+}
+```
+
+Trigger the event in another class.
+
+```csharp
+public class EventTrigger : MonoBehaviour
+{
+    private void Update()
+    {
+        if (Input.GetKeyDown(KeyCode.Space))
+        {
+            MyEvents.TestEvent.Invoke(this);
+            MyEvents.TestArgumentEvent.Invoke(this, ("Hello", "World"));
+            MyEvents.TestFilteredEvent.Invoke(this, ("Hello", "Filtered World"));
+        }
+    }
+}
+```
+
+
+
 ## Tools
 
 ### Object Pool
@@ -145,10 +205,10 @@ The method will return an object from the pool if there is an available **inacti
 Otherwise, it will instantiate a new object from the prefab.
 
 ```csharp
-private void Shoot(GameObject bulletPrefab)
+private async void Shoot(GameObject bulletPrefab)
 {
   GameObject bulletObject = ObjectPool.Get(bulletPrefab);
-  bulletObject.SetActive(true);
+  bulletObject.SetActive(true); // <- **Important** to activate the object
   
   // align to gun barrel/muzzle position
   bulletObject.transform.SetPositionAndRotation(muzzlePosition.position, muzzlePosition.rotation);
@@ -160,8 +220,8 @@ private void Shoot(GameObject bulletPrefab)
   rigidbody.AddForce(bulletObject.transform.forward * muzzleVelocity, ForceMode.Acceleration);
   
   // turn off after a few seconds
-  ExampleProjectile p = bulletObject.GetComponent<ExampleProjectile>();
-  p?.Deactivate();
+  await UniTask.Delay(TimeSpan.FromSeconds(3));
+  bulletObject.SetActive(false); // <- **Important** set inactive to return to the pool
 }
 ```
 
@@ -194,32 +254,3 @@ private void ChangeColor(MeshRenderer meshRenderer, Color color, float intensity
             material.SetColor(PropertyName, color * intensity);
 }
 ```
-
-
-<!--
-
-## Event
-
-Define an event in a class.
-```cs
-public static Event TestEvent = new();
-public static Event TestFilteredEvent = new() {
-    filter = (sender, receiver, args) => true
-};
-public static Event<(string a, string b)> TestArgumentEvent = new();
-```
-
-```csharp
-void OnEvent(object sender, (string a, string b) args) { }
-
-// Subscribe
-TestArgumentEvent += OnEvent;
-
-// Unsubscribe 
-TestArgumentEvent -= OnEvent;
-```
-
-
-
--->
-
