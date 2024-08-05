@@ -2,7 +2,7 @@
 
 using UnityEngine.UI;
 
-namespace Modules.UI.Misc
+namespace Luna.Extensions.Unity
 {
     using UnityEngine;
 

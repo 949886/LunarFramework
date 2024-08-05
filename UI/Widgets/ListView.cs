@@ -6,7 +6,7 @@ using System.Linq;
 using Cysharp.Threading.Tasks;
 using DG.Tweening;
 using Luna.Extensions;
-using Modules.UI.Misc;
+using Luna.Extensions.Unity;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;

@@ -1,11 +1,11 @@
 // Created by LunarEclipse on 2024-7-13 0:8.
 
-namespace Modules.UI.Misc
+namespace Luna.Extensions.Unity
 {
     using UnityEngine;
     using UnityEngine.UI;
 
-    public static class ColorBlockExtension
+    public static class ColorBlockExtensions
     {
         public static ColorBlock ClearColor(this ColorBlock colorBlock)
         {
