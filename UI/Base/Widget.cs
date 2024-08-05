@@ -1,5 +1,6 @@
 // Created by LunarEclipse on 2024-6-21 3:15.
 
+using Cysharp.Threading.Tasks;
 using UnityEngine;
 
 #if USE_ADDRESSABLES
@@ -14,6 +15,21 @@ namespace Luna.UI
         protected bool isDirty = false;
         
         protected Widget() {}
+
+        // protected async void SetDirty()
+        // {
+        //     if (!isDirty)
+        //     {
+        //         isDirty = true;
+        //         if (isActiveAndEnabled)
+        //             await UniTask.Yield();
+        //         // else await UniTask.WaitUntil(() => isActiveAndEnabled);
+        //         Build();
+        //         isDirty = false;
+        //     }
+        // }
+        //
+        // protected virtual void Build() {}
         
 #if USE_ADDRESSABLES
         public static T New<T>(Transform parent = null) where T : Widget

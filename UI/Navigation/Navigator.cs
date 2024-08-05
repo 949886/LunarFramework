@@ -17,12 +17,15 @@ namespace Luna.UI.Navigation
         
         private static readonly Stack<Navigator> _navigatorStack = new();
         
+        // Reference to the root canvas. If not found, a new canvas will be created.
+        public Canvas canvas; 
+        // The root widget of the navigator
+        public GameObject rootWidget; 
         
-        public Canvas canvas; // Reference to the Canvas
-        public GameObject rootWidget; // The root widget of the game
-        
-        public bool focusAutomatically = true; // Focus on last selected object when a new widget is popped
-        public bool escToPop = false; // Pop the top widget when the escape key is pressed
+        // Focus on last selected object when a new widget is popped
+        public bool focusAutomatically = true; 
+        // Pop the top widget when the escape key is pressed
+        public bool escToPop = false; 
         
         private readonly Stack<GameObject> _widgetStack = new();
         // private readonly Stack<GameObject> _widgetHistory = new();
@@ -70,7 +73,7 @@ namespace Luna.UI.Navigation
             if (canvas == null)
             {
                 // Create a new canvas if none is found
-                if (!(canvas = FindObjectOfType<Canvas>().rootCanvas))
+                if (!(canvas = FindObjectOfType<Canvas>()?.rootCanvas))
                 {
                     GameObject canvasObject = new GameObject("Canvas");
                     canvas = canvasObject.AddComponent<Canvas>();
@@ -130,10 +133,11 @@ namespace Luna.UI.Navigation
             }
                 
         }
+        
 
-        public static void Push(GameObject widgetPrefab)
+        public static Task<dynamic> Push(GameObject widgetPrefab, Action<GameObject> callback = null)
         {
-            Instance._Push(widgetPrefab);
+            return Instance._Push(widgetPrefab, callback);
         }
         
         /// <summary>
@@ -153,9 +157,17 @@ namespace Luna.UI.Navigation
         /// </typeparam>
         public static Task<dynamic> Push<T>(Action<T> callback = null) where T : Widget
         {
-            return Instance._Push(callback);
+            return Instance._Push<T>(callback);
         }
         
+        public static Task<dynamic> PushReplacement<T>(Action<T> callback = null) where T : Widget
+        {
+            return Instance._PushReplacement(callback);
+        }
+        
+        /// <summary>
+        /// Pop the top widget from the stack.
+        /// </summary>
         public static void Pop()
         {
             Instance._Pop(0);
@@ -180,23 +192,36 @@ namespace Luna.UI.Navigation
             Instance._PopToRoot();
         }
 
-        protected GameObject _Push(GameObject widgetPrefab)
+        protected Task<dynamic> _Push(GameObject widgetPrefab, Action<GameObject> callback = null)
         {
             if (_widgetStack.Count > 0)
                 _widgetStack.Peek().SetActive(false);
+            
+            // Instantiating the widget.
+            // Widget will execute Awake method.
+            var go = Instantiate(widgetPrefab, canvas.transform);
+            _widgetStack.Push(go);
+            
+            var route = new Route();
+            route.lastSelected = EventSystem.current.currentSelectedGameObject;
+            _routeStack.Push(route);
+            
+            // Executing the callback.
+            if (callback is not null)
+                callback.Invoke(go);
+                
+            // Setting widget active.
+            // Widget will execute OnEnable and Start methods.
+            go.SetActive(true);
+            widgetPrefab.SetActive(true);
 
-            GameObject newWidget = Instantiate(widgetPrefab, canvas.transform);
-            _widgetStack.Push(newWidget);
-            return newWidget;
+            return route.Popped;
         }
         
         
 #if USE_ADDRESSABLES
         protected async Task<dynamic> _Push<T>(Action<T> callback = null) where T : Widget
         {
-            var route = new Route();
-            route.lastSelected = EventSystem.current.currentSelectedGameObject;
-            
             if (_widgetStack.Count > 0)
                 _widgetStack.Peek().SetActive(false);
             
@@ -214,16 +239,26 @@ namespace Luna.UI.Navigation
             // Widget will execute Awake method.
             var newWidget = Instantiate(widgetPrefab, canvas.transform);
             _widgetStack.Push(newWidget);
+
+            var component = newGameObject.GetComponent<T>();
+            component.enabled = false;
+
+            var route = new Route();
+            route.lastSelected = EventSystem.current.currentSelectedGameObject;
             _routeStack.Push(route);
                 
+            // Setting game object active.
+            // Widget will execute Awake methods.
+            newGameObject.SetActive(true);
+            widgetPrefab.SetActive(true);
+
             // Executing the callback.
             if (callback is not null)
-                callback.Invoke(newWidget.GetComponent<T>());
-                
-            // Setting widget active.
+                callback.Invoke(component);
+
+            // Enabling the widget component.
             // Widget will execute OnEnable and Start methods.
-            newWidget.SetActive(true);
-            widgetPrefab.SetActive(true);
+            widget.enabled = true;
 
             // Wait for the widget to be popped and release the addressable asset.
             var result = await route.Popped;
@@ -231,11 +266,8 @@ namespace Luna.UI.Navigation
             return result;
         }
 #else // USE SCRIPTABLE OBJECT
-        protected Task<dynamic> _Push<T>(Action<T> callback = null) where T : Widget
+        protected Task<dynamic> _Push<T>(Route<T> route = null) where T : Widget
         {
-            var route = new Route();
-            route.lastSelected = EventSystem.current.currentSelectedGameObject;
-            
             if (_widgetStack.Count > 0)
                 _widgetStack.Peek().SetActive(false);
 
@@ -244,25 +276,46 @@ namespace Luna.UI.Navigation
                 widgetPrefab.SetActive(false);
                 
                 // Instantiating the widget.
-                // Widget will execute Awake method.
-                var newWidget = Instantiate(widgetPrefab, canvas.transform);
-                _widgetStack.Push(newWidget);
+                var newGameObject = Instantiate(widgetPrefab, canvas.transform);
+                _widgetStack.Push(newGameObject);
+                
+                var widget = newGameObject.GetComponent<T>();
+                widget.enabled = false;
+                
+                // Creating a new navigation route if not provided.
+                if (route == null)
+                    route = new Route<T>();
+                route.lastSelected = EventSystem.current.currentSelectedGameObject;
                 _routeStack.Push(route);
                 
-                // Executing the callback.
-                if (callback is not null)
-                    callback.Invoke(newWidget.GetComponent<T>());
-                
-                // Setting widget active.
-                // Widget will execute OnEnable and Start methods.
-                newWidget.SetActive(true);
+                // Setting game object active.
+                // Widget will execute Awake methods.
+                newGameObject.SetActive(true);
                 widgetPrefab.SetActive(true);
+                
+                // Executing the callback.
+                if (route is not null)
+                    route.callback?.Invoke(widget);
+                
+                // Enabling the widget component.
+                // Widget will execute OnEnable and Start methods.
+                widget.enabled = true;
             }  
             else Debug.LogError($"[Navigator] Widget of type {typeof(T)} not found.");
             return route.Popped;
         }
 #endif
         
+        protected Task<dynamic> _PushReplacement<T>(Action<T> callback = null) where T : Widget
+        {
+            if (_widgetStack.Count > 0)
+            {
+                Destroy(_widgetStack.Pop());
+                _routeStack.Pop();
+            }
+            
+            return _Push<T>(callback);
+        }
 
         protected void _Pop<T>(T result = default)
         {
@@ -282,7 +335,7 @@ namespace Luna.UI.Navigation
                     _widgetStack.Peek().SetActive(true);
                 
                 // Focus on the last selected object
-                if (focusAutomatically && route.lastSelected != null)
+                if (focusAutomatically && route?.lastSelected != null)
                     EventSystem.current.SetSelectedGameObject(route.lastSelected);
             }
         }

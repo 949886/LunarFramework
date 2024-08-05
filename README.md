@@ -65,8 +65,7 @@ This generic method takes a type of subclass of the `Widget` class as a paramete
 public void OnBlueButtonClick()
 {
       // Edit roulette
-      Navigator.Push<RouletteGameView>(async (view) =>
-      {
+      Navigator.Push<RouletteGameView>(async (view) => {
             // You can use UniTask to pass data at the next frame
             await UniTask.NextFrame();
             view.RouletteData = Data;
