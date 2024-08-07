@@ -1,6 +1,7 @@
 # Lunar Framework
 
 ![](https://img.shields.io/badge/Unity-2021.3-green.svg?style=flat-square)
+<img src="https://komarev.com/ghpvc/?username=lunareclipse-lunarframework&color=green&style=flat-square&label=Views" width="1px">
 
 Lunar Framework is a set of tools and patterns for Unity3D development. It's designed to make the development process easier and more efficient.
 
@@ -28,6 +29,15 @@ Lunar Framework is a set of tools and patterns for Unity3D development. It's des
 
 ### Navigation
 
+#### Navigator
+
+To manage the navigation of the UI with the `Navigator` by following these steps:
+
+1. Create a new game object and attach the `Navigator` component to it.
+2. Set the root Widget you want to show first when the game starts (Root widget is a game object that has a component of the subclass of the `Widget` or `StatefulWidget`).
+3. [Optional] Set the root canvas if you want to use the `Navigator` in a different canvas. If you don't set the root canvas, the `Navigator` will find it automatically.
+
+
 #### Push a widget
 
 ```cs
@@ -49,37 +59,54 @@ This generic method takes a type of subclass of the `Widget` class as a paramete
 
 #### Pop a widget
 
+Pop current widget by calling the `Navigator.Pop` method. The top widget will be removed from the navigation stack and destroyed.
+
 ```cs
-  private void Update()
-  {
-      if (Input.GetKeyDown(KeyCode.Escape)) 
-          Navigator.Pop();
-  }
+void Update()
+{
+    if (Input.GetKeyDown(KeyCode.Escape)) 
+        Navigator.Pop();
+}
 ```
+
+Alternatively, you can pop a widget by calling the `Navigator.PopUntil` or `Navigator.PopToRoot` method to pop widgets until a specific widget or the root widget.
+
 
 #### Pass data
 
+
 **View -> Subview**
+
+You can use a lambda callback to pass data to the widget. The callback will be executed after the widget is instantiated.
 
 ```cs
 public void OnBlueButtonClick()
 {
-      // Edit roulette
-      Navigator.Push<RouletteGameView>(async (view) => {
-            // You can use UniTask to pass data at the next frame
-            await UniTask.NextFrame();
-            view.RouletteData = Data;
-      });
+    Navigator.Push<RouletteGameView>(async (view) => {
+        // Basically, you can pass data to the widget by setting corresponding properties directly.
+        // You can also use UniTask to pass data at the next frame if you want to do something after the widget is enabled.
+        /* await UniTask.NextFrame(); */
+        view.RouletteData = Data;
+    });
 }
 ```
-
-You can use a lambda callback to pass data to the widget. The callback will be executed after the widget is instantiated.  
 
 > [!NOTE]  
 > The callback will be executed before the widget is enabled, so you should initialize the widget in Awake method.
 
 
 **Subview -> View**
+
+Basically, you can pass data back to the previous widget by using the `Navigator.Pop` method.
+
+```cs
+public void OnExitButtonClick()
+{
+    Navigator.Pop(data);
+}
+```
+
+Then you can get the data from the previous widget by casting the return value of the `Navigator.Push` method.
 
 ```cs
 public async void OnClickSettingsButton()  
@@ -99,25 +126,25 @@ public async void OnClickSettingsButton()
 ```cs
 public async void OnEditButtonClick()
 {
-      // Create a new roulette and let the user edit it.
-      var roulette = new RouletteData();
-      roulette.title = "New Roulette";
-      roulette.sectors = new List<RouletteSector>();
-      for (int i = 0; i < 8; i++)
-            roulette.sectors.Add(new RouletteSector()
-            {
-                  content = $"Roulette {i}",
-                  weight = 1,
-                  color = Color.HSVToRGB(1.0f / 8 * i, 0.5f, 1f),
-            });
-      
-      // Open edit view with a new roulette.
-      var result = await Navigator.Push<RouletteEditView>((view) => {
-            view.Data = roulette;
-      }) as RouletteData;
-      
-      // Add edited new roulette to front.
-      roulettes.Insert(0, result);
+    // Create a new roulette and let the user edit it.
+    var roulette = new RouletteData();
+    roulette.title = "New Roulette";
+    roulette.sectors = new List<RouletteSector>();
+    for (int i = 0; i < 8; i++)
+        roulette.sectors.Add(new RouletteSector()
+        {
+            content = $"Roulette {i}",
+            weight = 1,
+            color = Color.HSVToRGB(1.0f / 8 * i, 0.5f, 1f),
+        });
+    
+    // Open edit view with a new roulette.
+    var result = await Navigator.Push<RouletteEditView>((view) => {
+        view.Data = roulette;
+    }) as RouletteData;
+    
+    // Add edited new roulette to front.
+    roulettes.Insert(0, result);
 }
 ```
 
@@ -129,7 +156,7 @@ You can have a new navigator anywhere with a game object as root to adapt old co
 ```cs
 void Start()
 {
-      Navigator.Create(gameObject);
+    Navigator.Create(gameObject);
 }
 ```
 
