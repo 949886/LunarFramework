@@ -10,9 +10,17 @@ using UnityEngine.AddressableAssets;
 
 namespace Luna.UI
 {
+    [DisallowMultipleComponent]
+    [RequireComponent(typeof(RectTransform), typeof(CanvasRenderer), typeof(CanvasGroup))]
     public abstract partial class Widget : MonoBehaviour
     {
         protected bool isDirty = false;
+        
+        public bool Active
+        {
+            get => gameObject.activeInHierarchy;
+            set => gameObject.SetActive(value);
+        }
         
         protected Widget() {}
 
@@ -31,62 +39,74 @@ namespace Luna.UI
         //
         // protected virtual void Build() {}
         
+        
 #if USE_ADDRESSABLES
-        public static T New<T>(Transform parent = null) where T : Widget
+        public static T New<T>(bool active = true, Transform parent = null) where T : Widget
         {
-            var key = (typeof(T).Namespace ?? "global") + "." + typeof(T).Name;
-            var handler = Addressables.LoadAssetAsync<GameObject>(key);
-            var prefab = handler.WaitForCompletion();
+            var prefab = Load<T>();
             if (prefab == null)
             {
-                var newWidget = new GameObject(typeof(T).Name).AddComponent<T>();
+                var newWidget = new GameObject(typeof(T).Name) { active = active } .AddComponent<T>();
                 newWidget.transform.SetParent(parent, false);
                 return newWidget;
             }
             else
             {
+                if (!active) prefab.SetActive(false);
                 var widget = Instantiate(prefab, parent).GetComponent<T>();
+                if (!active) prefab.SetActive(true);
                 widget.transform.SetParent(parent, false);
                 return widget;
             }
         }
         
-        public static Task<T> NewAsync<T>(Transform parent = null) where T : Widget
+        public static Task<T> NewAsync<T>(bool active = true, Transform parent = null) where T : Widget
         {
             var tcs = new TaskCompletionSource<T>();
             
-            var key = (typeof(T).Namespace ?? "global") + "." + typeof(T).Name;
-            var handler = Addressables.LoadAssetAsync<GameObject>(key);
-            handler.Completed += op =>
+            var task = LoadAsync<T>();
+            
+            task.ContinueWith(op =>
             {
                 if (op.Result == null)
                 {
-                    var newWidget = new GameObject(typeof(T).Name).AddComponent<T>();
+                    var newWidget = new GameObject(typeof(T).Name) { active = active } .AddComponent<T>();
                     newWidget.transform.SetParent(parent, false);
                     tcs.SetResult(newWidget);
                 }
                 else
                 {
+                    if (!active) op.Result.SetActive(false);
                     var widget = Instantiate(op.Result, parent).GetComponent<T>();
+                    if (!active) op.Result.SetActive(true);
                     widget.transform.SetParent(parent, false);
                     tcs.SetResult(widget);
                 }
-            };
+            });
             return tcs.Task;
         }
 #else
-        public static T New<T>(Transform parent = null) where T : Widget
+        public static T New<T>(bool active = true, Transform parent = null) where T : Widget
         {
             // Find the widget in the database.
-            var widget = Widget.Dictionary[typeof(T)];
-            if (widget != null)
-                return Instantiate(widget, parent).GetComponent<T>();
-
+            if (Widget.Dictionary.TryGetValue(typeof(T), out GameObject widgetPrefab))
+            {
+                if (!active) widgetPrefab.SetActive(false);
+                var widget = Instantiate(widgetPrefab, parent).GetComponent<T>();
+                if (!active) widgetPrefab.SetActive(true);
+                return widget;
+            }
+            
             // Create a new widget.
-            var newWidget = new GameObject(typeof(T).Name).AddComponent<T>();
+            var newWidget = new GameObject(typeof(T).Name) { active = active } .AddComponent<T>();
             newWidget.transform.SetParent(parent, false);
             return newWidget;
         }
 #endif
+        
+        public static implicit operator GameObject(Widget widget)
+        {
+            return widget.gameObject;
+        }
     }
 }

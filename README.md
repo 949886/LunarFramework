@@ -69,7 +69,7 @@ void Update()
 }
 ```
 
-Alternatively, you can pop a widget by calling the `Navigator.PopUntil` or `Navigator.PopToRoot` method to pop widgets until a specific widget or the root widget.
+Alternatively, you can pop a widget by calling the `Navigator.PopUntil<Target>` or `Navigator.PopToRoot` method to pop widgets until a specific widget or the root widget.
 
 
 #### Pass data
@@ -160,6 +160,14 @@ void Start()
 }
 ```
 
+
+<!--
+
+### Show Modal Dialog
+
+You can show a modal dialog by calling the `Navigator.ShowModal` method.
+
+-->
 
 
 ## Event
