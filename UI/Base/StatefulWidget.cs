@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace Luna.UI
 {
-    public abstract partial class StatefulWidget<T> : Widget where T : State, new()
+    public partial class StatefulWidget<T> : Widget where T : State, new()
     {
         public readonly State state = new T();
 

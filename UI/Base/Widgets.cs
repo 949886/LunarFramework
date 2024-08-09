@@ -14,7 +14,7 @@ namespace Luna.UI
         {
             if (Prefabs.Contains(prefab))
             {
-                Debug.LogWarning("Prefab already exists in the list.");
+                // Debug.LogWarning("Prefab already exists in the list.");
                 return;
             }
             Prefabs.Add(prefab);

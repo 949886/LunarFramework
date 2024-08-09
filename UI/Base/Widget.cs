@@ -12,7 +12,7 @@ namespace Luna.UI
 {
     [DisallowMultipleComponent]
     [RequireComponent(typeof(RectTransform), typeof(CanvasRenderer), typeof(CanvasGroup))]
-    public abstract partial class Widget : MonoBehaviour
+    public partial class Widget : MonoBehaviour
     {
         protected bool isDirty = false;
         
