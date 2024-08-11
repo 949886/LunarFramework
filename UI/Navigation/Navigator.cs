@@ -348,8 +348,13 @@ namespace Luna.UI.Navigation
                 var topWidget = _widgetStack.Pop();
                 Destroy(topWidget.gameObject);
                 
-                // Pass the result to the previous widget
                 var route = _routeStack.Pop();
+                
+                // Focus on the last selected object
+                if (focusAutomatically && route?.LastSelected != null)
+                    EventSystem.current.SetSelectedGameObject(route.LastSelected);
+                
+                // Pass the result to the previous widget
                 if (route != null)
                 {
                     route.OnPop();
@@ -359,10 +364,6 @@ namespace Luna.UI.Navigation
                 // Show the previous widget
                 if (_widgetStack.Count > 0)
                     _widgetStack.Peek().gameObject.SetActive(true);
-                
-                // Focus on the last selected object
-                if (focusAutomatically && route?.LastSelected != null)
-                    EventSystem.current.SetSelectedGameObject(route.LastSelected);
             }
         }
 

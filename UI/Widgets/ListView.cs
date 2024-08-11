@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Cysharp.Threading.Tasks;
 using DG.Tweening;
 using Luna.Extensions;
@@ -25,7 +26,13 @@ namespace Luna.UI
             set
             {
                 data = value;
-                isDirty = true;
+
+                if (!isDirty)
+                {
+                    if (_initialized) ReloadAsync();
+                    isDirty = true;
+                }
+                
             }
         }
         
@@ -35,6 +42,7 @@ namespace Luna.UI
         public bool snapToCellWhenSelected = true;
         public bool selectFirstCellOnEnable = true;
         public bool selectFirstCellOnReload = true;
+        public bool keepSelectionOnReload = true;
         
         public delegate void CellCallback(int index, T listViewCell);
 
@@ -54,8 +62,18 @@ namespace Luna.UI
         
         protected ScrollRect _scrollRect;
         
+        private bool _initialized;
+        private bool _selected;
+        
+        
         public int SelectedIndex { get; private set; }
         public U SelectedData => Data[SelectedIndex];
+        
+        /// Return true any cell is selected.
+        public bool Selected => _selected;
+        
+        public int Count => Data.Count;
+        
 
         // You should call base.Awake() in the derived class
         // or override this method to customize the initialization of the list view
@@ -65,8 +83,8 @@ namespace Luna.UI
             _scrollRect.onValueChanged.AddListener(OnScrollValueChanged);
             onCellCreated += OnCellCreated;
         }
-        
-        protected virtual async void OnEnable()
+
+        protected virtual async void Start()
         {
             Reload();
             isDirty = false;
@@ -81,15 +99,8 @@ namespace Luna.UI
                     EventSystem.current.SetSelectedGameObject(firstCell);
                 }
             }
-        }
-
-        protected void Update()
-        {
-            if (isDirty)
-            {
-                Reload();
-                isDirty = false;
-            }
+            
+            _initialized = true;
         }
 
         public void Reload()
@@ -106,6 +117,24 @@ namespace Luna.UI
             
             // Create new cells
             CreateCells();
+            
+            // Keep selection
+            if (_initialized && keepSelectionOnReload && cells.Count > 0)
+            {
+                if (SelectedIndex < cells.Count)
+                    cells[SelectedIndex].Select();
+                else cells.Last().Select();
+                
+                SelectedIndex = Mathf.Clamp(SelectedIndex, 0, cells.Count - 1);
+            }
+            
+            isDirty = false;
+        }
+        
+        public async Task ReloadAsync()
+        {
+            await UniTask.Yield(PlayerLoopTiming.PreUpdate);
+            Reload();
         }
         
         private void CreateCells()
@@ -150,12 +179,14 @@ namespace Luna.UI
 
         private void _OnCellDeselected(int index, ListViewCell<U> listViewCell)
         {
+            _selected = false;
             OnCellDeselected(index, listViewCell as T);
             onCellDeselected?.Invoke(index, listViewCell as T);
         }
 
         private void _OnCellSelected(int index, ListViewCell<U> listViewCell)
         {
+            _selected = true;
             SelectedIndex = index;
             OnCellSelected(index, listViewCell as T);
             onCellSelected?.Invoke(index, listViewCell as T);
@@ -167,9 +198,39 @@ namespace Luna.UI
             onCellClicked?.Invoke(index, listViewCell as T);
         }
         
-        void OnScrollValueChanged(Vector2 normalizedPosition)
+        private void OnScrollValueChanged(Vector2 normalizedPosition)
         {
             // UpdateVisibleItems();
+        }
+        
+        public void Select(int index)
+        {
+            if (index < cells.Count)
+            {
+                cells[index].Select();
+                _OnCellSelected(index, cells[index]);
+            }
+        }
+        
+        public void Remove(int index)
+        {
+            if (index < cells.Count && index >= 0)
+            {
+                Data.RemoveAt(index);
+                Reload();
+                // var cell = cells[index];
+                // cells.RemoveAt(index);
+                // Destroy(cell.gameObject);
+                //
+                // if (SelectedIndex >= cells.Count)
+                //     SelectedIndex = cells.Count - 1;
+            }
+        }
+        
+        public void Add(U item, int atIndex)
+        {
+            Data.Insert(atIndex, item);
+            Reload();
         }
         
         public void SnapTo(RectTransform target)

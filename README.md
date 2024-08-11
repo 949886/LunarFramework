@@ -34,7 +34,7 @@ Lunar Framework is a set of tools and patterns for Unity3D development. It's des
 To manage the navigation of the UI with the `Navigator` by following these steps:
 
 1. Create a new game object and attach the `Navigator` component to it.
-2. Set the root Widget you want to show first when the game starts (Root widget is a game object that has a component of the subclass of the `Widget` or `StatefulWidget`).
+2. Set the root `Widget` you want to show first when the game starts (Root widget is a game object that has a component of the subclass of the `Widget` or `StatefulWidget`).
 3. [Optional] Set the root canvas if you want to use the `Navigator` in a different canvas. If you don't set the root canvas, the `Navigator` will find it automatically.
 
 
@@ -144,7 +144,8 @@ public async void OnEditButtonClick()
     }) as RouletteData;
     
     // Add edited new roulette to front.
-    roulettes.Insert(0, result);
+    if (result != null)
+        roulettes.Insert(0, result);
 }
 ```
 
