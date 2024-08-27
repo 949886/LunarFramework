@@ -18,7 +18,7 @@ namespace Luna.UI
     public abstract class ListView<T, U> : Widget where T : ListViewCell<U>
     {
         [SerializeField] 
-        private List<U> data;
+        protected List<U> data;
         
         public List<U> Data
         {
@@ -298,7 +298,7 @@ public abstract class ListViewCell<T> : Selectable, ISelectHandler, IDeselectHan
         OnCellSubmitted?.Invoke(Index, this);
     }
     
-    public void OnPointerClick(PointerEventData eventData)
+    public virtual void OnPointerClick(PointerEventData eventData)
     {
         OnCellClicked?.Invoke(Index, this);
     }

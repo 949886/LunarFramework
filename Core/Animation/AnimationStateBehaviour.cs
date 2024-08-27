@@ -1,5 +1,7 @@
 ﻿// Created by LunarEclipse on 2024-2-1 3:58.
 
+#pragma warning disable CS0067 // Event is never used
+
 using Cysharp.Threading.Tasks;
 using UnityEngine;
 
