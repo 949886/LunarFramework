@@ -73,7 +73,7 @@ namespace Luna.UI
  
             foreach (var control in eventPtr.EnumerateChangedControls())
             {
-                Debug.Log(control); 
+                // Debug.Log(control); 
                 // Debug.Log(control.IsPressed());
                 // Debug.Log(control.IsActuated());
 
