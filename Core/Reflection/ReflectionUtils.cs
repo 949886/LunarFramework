@@ -3,7 +3,7 @@ using System.Reflection;
 
 namespace Luna.Core
 {
-    public class Reflection
+    public static class ReflectionUtils
     {
         /// <summary>Gets an instance method with single argument of type <typeparamref
         /// name="TArg0"/> and return type of <typeparamref name="TReturn"/> from <typeparamref

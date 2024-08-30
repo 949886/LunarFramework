@@ -3,6 +3,7 @@
     "rootNamespace": "",
     "references": [
         "GUID:1ce3b06d7c665e742aecb3f4ff333a4b",
+        "GUID:343deaaf83e0cee4ca978e7df0b80d21",
         "GUID:f06555f75b070af458a003d92f9efb00",
         "GUID:02f771204943f4a40949438e873e3eff",
         "GUID:69448af7b92c7f342b298e06a37122aa"
@@ -17,6 +18,11 @@
     "autoReferenced": true,
     "defineConstraints": [],
     "versionDefines": [
+        {
+            "name": "com.unity.ugui",
+            "expression": "1",
+            "define": "USE_UGUI"
+        },
         {
             "name": "com.unity.addressables",
             "expression": "2",

@@ -13,7 +13,7 @@ namespace Luna.Utils.Nuget
         {
             CreateNugetConfig();
             CreateNugetPackage();
-            AssetDatabase.Refresh();
+            EditorUtility.RequestScriptReload();
         }
         
         // Create Nuget.config file at the root of the project if it doesn't exist
@@ -33,9 +33,11 @@ namespace Luna.Utils.Nuget
 
             var path = Application.dataPath + "/../Nuget.config";
             if (!File.Exists(path))
+            {
                 File.WriteAllText(path, nugetConfig);
-            
-            Debug.Log("Nuget.config file created successfully.");
+                Debug.Log("Nuget.config file created successfully.");
+            }
+            else Debug.Log("Nuget.config file already exists.");
         }
         
         private static void CreateNugetPackage()
@@ -59,26 +61,39 @@ namespace Luna.Utils.Nuget
             if (!File.Exists(packageJsonPath))
             {
                 File.WriteAllText(packageJsonPath, packageJson);
+                Debug.Log("Nuget package created successfully.");
             }
+            else Debug.Log("Nuget package already exists.");
             
-            Debug.Log("Nuget package created successfully.");
+            
+            // Create assembly definition file
+            var assemblyDefinition =
+@"{
+	""name"": ""Nuget""
+}";
+            var assemblyDefinitionPath = path + "/Nuget.asmdef";
+            if (!File.Exists(assemblyDefinitionPath))
+            {
+                File.WriteAllText(assemblyDefinitionPath, assemblyDefinition);
+                Debug.Log("Nuget assembly definition file created successfully.");
+            }
+            else Debug.Log("Nuget.asmdef file already exists.");
+
             
             // Add reference in the manifest.json file
             var manifestPath = Application.dataPath + "/../Packages/manifest.json";
             var manifestJson = File.ReadAllText(manifestPath);
             if (!manifestJson.Contains("files:./Nuget"))
             {
-                manifestJson =
-                    manifestJson.Replace("\"dependencies\": {", "\"dependencies\": {\n    \"nuget\": \"files:./Nuget\",");
+                manifestJson = manifestJson.Replace("\"dependencies\": {", "\"dependencies\": {\n    \"nuget\": \"files:./Nuget\",");
+                File.WriteAllText(manifestPath, manifestJson);
+                Debug.Log("Nuget package added to the manifest.json file.");
             }
-            File.WriteAllText(manifestPath, manifestJson);
+            else Debug.Log("Nuget package already exists in the manifest.json file.");
             
-            Debug.Log("Nuget package added to the manifest.json file.");
             
-            // Ignore Nuget.csproj file in the .gitignore file
-            var textToAppend = @"
-# Exclude Nuget.csproj file.
-!Nuget.csproj";
+            // Not ignore Nuget.csproj file in the .gitignore file
+            var textToAppend = "\n# Include Nuget.csproj file.\n!Nuget.csproj";
             
             var gitignorePath = Application.dataPath + "/../.gitignore";
             if (!File.Exists(gitignorePath)) return;
@@ -87,9 +102,9 @@ namespace Luna.Utils.Nuget
             {
                 using var writer = File.AppendText(gitignorePath);
                 writer.Write(textToAppend);
+                Debug.Log("Nuget.csproj file added to the .gitignore file.");
             }
-            
-            Debug.Log("Nuget.csproj file added to the .gitignore file.");
+            else Debug.Log("Nuget.csproj file already exists in the .gitignore file.");
         }
     }
 }

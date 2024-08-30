@@ -17,7 +17,7 @@ public class WidgetAssetMenu : EditorWindow
         
         private static string PREFAB_CACHE_PATH = Application.temporaryCachePath + "/Widgets/";
     
-        [MenuItem("Assets/Create/UI Widget Script", false, 81)]
+        [MenuItem("Assets/Create/UI Widget Script", false, 70)]
         public static void AddWidgetScript()
         {
             var path = AssetDatabase.GetAssetPath(Selection.activeObject);
@@ -78,6 +78,9 @@ public class " + fileName + @": Widget
             [DidReloadScripts]
             private static async void CreatePrefabAfterCompile()
             {
+                if (!Directory.Exists(PREFAB_CACHE_PATH))
+                    return;
+                
                 // Read all the prefabs in the cache directory and add script component
                 var files = Directory.GetFiles(PREFAB_CACHE_PATH, "*.txt");
                 foreach (var file in files)

@@ -1,9 +1,8 @@
-﻿// Created by LunarEclipse on 2024-01-05 16:38.
+// Created by LunarEclipse on 2024-01-05 16:38.
 
 #if UNITY_2021_3_OR_NEWER
 
 using System;
-using System.Reflection;
 using Luna.Core;
 using UnityEngine;
 
@@ -23,7 +22,7 @@ namespace Luna.Extensions.Unity
         public static string GetCurrentStateName(this Animator animator, int layer)
         {
             if (_getCurrentStateName == null)
-                _getCurrentStateName = Reflection.AccessPrivateFunction<Animator, int, string>("GetCurrentStateName");
+                _getCurrentStateName = ReflectionUtils.AccessPrivateFunction<Animator, int, string>("GetCurrentStateName");
             return _getCurrentStateName(animator, layer);
         }
      
@@ -37,7 +36,7 @@ namespace Luna.Extensions.Unity
         public static string GetNextStateName(this Animator animator, int layer)
         {
             if (_getNextStateName == null)
-                _getNextStateName = Reflection.AccessPrivateFunction<Animator, int, string>("GetNextStateName");
+                _getNextStateName = ReflectionUtils.AccessPrivateFunction<Animator, int, string>("GetNextStateName");
             return _getNextStateName(animator, layer);
         }
      
@@ -53,7 +52,7 @@ namespace Luna.Extensions.Unity
         public static string ResolveHash(this Animator animator, int hash)
         {
             if (_resolveHash == null)
-                _resolveHash = Reflection.AccessPrivateFunction<Animator, int, string>("ResolveHash");
+                _resolveHash = ReflectionUtils.AccessPrivateFunction<Animator, int, string>("ResolveHash");
             return _resolveHash(animator, hash);
         }
     }

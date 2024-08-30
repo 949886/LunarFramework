@@ -9,15 +9,6 @@
     "email": "nyaatuki@gmail.com",
     "url": "https://lunareclipse.cc"
   },
-  "scopedRegistries": [
-    {
-      "name": "com.cysharp.unitask",
-      "url": "https://github.com/Cysharp/UniTask.git?path=src/UniTask/Assets/Plugins/UniTask",
-      "scopes": [
-        "com.cysharp.unitask"
-      ]
-    }
-  ],
   "dependencies": {
     "com.unity.inputsystem": "1.8.2",
     "com.unity.textmeshpro": "3.0.6"

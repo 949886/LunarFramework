@@ -1,5 +1,7 @@
 // Created by LunarEclipse on 2024-08-30 14:50.
 
+#if UNITY_EDITOR
+
 using System.IO;
 using System.Text.RegularExpressions;
 using UnityEditor;
@@ -113,3 +115,5 @@ namespace Luna.Utils
         }
     }
 }
+
+#endif
