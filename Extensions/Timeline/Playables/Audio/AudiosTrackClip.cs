@@ -1,16 +1,19 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Sirenix.OdinInspector;
 using UnityEngine;
 using UnityEngine.Audio;
+using UnityEngine.Playables;
+using UnityEngine.Timeline;
+using Random = System.Random;
+
 #if UNITY_EDITOR
 using System.ComponentModel;
 #endif
-using UnityEngine.Playables;
-using UnityEngine.Serialization;
-using UnityEngine.Timeline;
-using Random = System.Random;
+
+#if USE_ODIN
+using Sirenix.OdinInspector;
+#endif
 
 namespace Luna.Extensions.Timeline
 {
@@ -23,7 +26,10 @@ namespace Luna.Extensions.Timeline
 #endif
     public class AudiosTrackClip : PlayableAsset, ITimelineClipAsset, IPlayableBehaviour
     {
-        [TableList] public List<WeightedAudioClip> clips = new();
+#if USE_ODIN
+        [TableList]
+#endif
+        public List<WeightedAudioClip> clips = new();
         
         // The probability of whether the audio clip will play or not.
         [Range(0.0f, 1.0f)] public float probability = 0.5f;
@@ -161,7 +167,9 @@ namespace Luna.Extensions.Timeline
         [Serializable]
         public class WeightedAudioClip
         {
+#if USE_ODIN
             [TableColumnWidth(200)]
+#endif
             public AudioClip audioClip;
             public float weight = 1.0f;
             public float volume = 1.0f;
