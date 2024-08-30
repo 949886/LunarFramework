@@ -1,0 +1,3 @@
+[submodule "Plugins/UniTask"]
+	path = Plugins/UniTask
+	url = https://github.com/LunarLibrary/UniTask.git
