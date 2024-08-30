@@ -1,3 +1,6 @@
 [submodule "Plugins/UniTask"]
 	path = Plugins/UniTask
 	url = https://github.com/LunarLibrary/UniTask.git
+[submodule "Plugins/DoTween"]
+	path = Plugins/DoTween
+	url = https://github.com/LunarLibrary/Unity-DoTween.git
