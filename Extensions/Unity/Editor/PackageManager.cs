@@ -1,5 +1,7 @@
 // Created by LunarEclipse on 2024-08-30 17:34.
 
+#if UNITY_EDITOR
+
 using System;
 using System.IO;
 using System.Linq;
@@ -21,7 +23,7 @@ namespace Luna.Editor
         [InitializeOnLoadMethod]
         static void Install()
         {
-            Add("com.cysharp.unitask", "https://github.com/Cysharp/UniTask.git?path=src/UniTask/Assets/Plugins/UniTask");
+            //Add("com.cysharp.unitask", "https://github.com/Cysharp/UniTask.git?path=src/UniTask/Assets/Plugins/UniTask");
         }
         
         public static void Add(string packageId, string url = null)
@@ -85,3 +87,5 @@ namespace Luna.Editor
     }
     
 }
+
+#endif

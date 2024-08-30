@@ -14,6 +14,21 @@ namespace Luna.Utils
 {
     public class EnumUtils
     {
+        
+        /// Get Enum value with Description attribute from string
+        ///
+        /// Example:
+        /// ```csharp
+        /// public enum TestEnum
+        /// {
+        ///     [Description("Test1")]
+        ///     Test1,
+        ///     [Description("Test2")]
+        ///     Test2
+        /// }
+        ///
+        /// var testEnum = EnumUtils.FromDescription<TestEnum>("Test1");
+        /// ```
         public static object FromDescription(Type enumType, string value)
         {
             if (enumType == null)
