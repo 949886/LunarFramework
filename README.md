@@ -5,8 +5,11 @@
 
 Lunar Framework is a set of tools and patterns for Unity3D development. It's designed to make the development process easier and more efficient.
 
+---
+
 ## Table of Contents
 
+- [Installation](#installation)
 - [UI](#UI)
   - [UI Navigation](#navigation)
 - [Event](#event)
@@ -15,6 +18,14 @@ Lunar Framework is a set of tools and patterns for Unity3D development. It's des
 - [Scripting](#scripting)
   - [Attributes](#attributes)
 
+
+## Installation
+
+### Unity Package Manager
+
+1. Open the Unity Package Manager by selecting `Window` > `Package Manager`.
+2. Click the `+` button in the top-left corner and select `Add package from git URL...`.
+3. Enter the git URL `https://github.com/949886/LunarFramework.git` and click `Add`.
 
 <!--
 
