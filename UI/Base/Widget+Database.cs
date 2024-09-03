@@ -2,7 +2,9 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using UnityEngine;
+using Debug = UnityEngine.Debug;
 
 #if USE_ADDRESSABLES
 using UnityEngine.AddressableAssets;
@@ -118,6 +120,8 @@ namespace Luna.UI
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
         private static void Initialize()
         {
+            var stopWatch = Stopwatch.StartNew();
+            
             // Find all Widget in the project at startup.
             // Load widgets scriptable object
             var widgets = Resources.Load<Widgets>(WIDGETS_DB_FILE_NAME);
@@ -126,10 +130,13 @@ namespace Luna.UI
                 All = widgets.Prefabs;
                 foreach (var widget in All)
                 {
-                    Debug.Log($"[Widget Database] Found widget: {widget.name}");
+                    // Debug.Log($"[Widget Database] Found widget: {widget.name}");
                     Dictionary.TryAdd(widget.GetComponent<Widget>().GetType(), widget);
                 }
             }
+            
+            stopWatch.Stop();
+            Debug.Log($"[Widget Database] {All.Count} widgets loaded in {stopWatch.ElapsedMilliseconds}ms");
         }
 #endif
         

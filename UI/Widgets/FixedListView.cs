@@ -240,12 +240,12 @@ namespace Luna.UI
                 SnapTo(cells[index].transform as RectTransform);
         }
         
-        public void SnapTo(RectTransform target)
+        /// Override this method to customize the snap behavior.
+        public virtual void SnapTo(RectTransform target)
         {
             var y = -target.offsetMin.y - ((RectTransform)_scrollRect.transform).rect.height;
             y = Mathf.Clamp(y, 0, _scrollRect.content.rect.height);
             var pos = new Vector2(_scrollRect.content.anchoredPosition.x, y);
-            Debug.Log($"target.offsetMin.y: {target.offsetMin.y}, rect.height: {((RectTransform)_scrollRect.transform).rect.height}, y: {y}, pos: {pos}");
             DOTween.To(() => _scrollRect.content.anchoredPosition, v => _scrollRect.content.anchoredPosition = v, pos, 0.5f);
         }
         

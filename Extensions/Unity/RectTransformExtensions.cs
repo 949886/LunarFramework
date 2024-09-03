@@ -56,5 +56,31 @@ namespace Luna.Extensions.Unity
             rectTransform.offsetMin = new Vector2(value.x - halfWidth, value.y - halfHeight);
             rectTransform.offsetMax = new Vector2(value.x + halfWidth, value.y + halfHeight);
         }
+        
+        /// Get the position of the RectTransform in screen space.
+        /// The origin is at the bottom-left corner of the screen.
+        public static Vector2 PositionOnScreen(this RectTransform rectTransform)
+        {
+            // Convert the world position to screen point
+            var worldPosition = rectTransform.position;
+            var screenPoint = RectTransformUtility.WorldToScreenPoint(Camera.main, worldPosition);
+            
+            return screenPoint;
+        }
+        
+        /// Get the position of the RectTransform relative to the pivot of the Canvas.
+        public static Vector2 PositionOnCanvas(this RectTransform rectTransform)
+        {
+            var canvas = rectTransform.GetComponentInParent<Canvas>();
+            if (canvas == null)
+            {
+                Debug.LogError("No canvas found in parent.");
+                return Vector2.zero;
+            }
+            
+            var screenPoint = PositionOnScreen(rectTransform);
+            RectTransformUtility.ScreenPointToLocalPointInRectangle(canvas.transform as RectTransform, screenPoint, canvas.worldCamera, out var position);
+            return position;
+        }
     }
 }
