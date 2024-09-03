@@ -71,6 +71,11 @@
             "name": "odin",
             "expression": "1",
             "define": "USE_ODIN"
+        },
+        {
+            "name": "com.unity.render-pipelines.universal",
+            "expression": "1",
+            "define": "USE_URP"
         }
     ],
     "noEngineReferences": false

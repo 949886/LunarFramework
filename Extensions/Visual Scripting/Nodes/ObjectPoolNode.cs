@@ -7,7 +7,6 @@
 
 using Luna.Core.Pool;
 using UnityEngine;
-using UnityEngine.Rendering;
 
 #if USE_VISUAL_SCRIPTING
 
@@ -15,11 +14,15 @@ using Unity.VisualScripting;
 
 namespace Luna.Extensions.VisualScripting
 {
+#if USE_URP
+    using UnityEngine.Rendering;
 
+    [TypeIcon(typeof(Volume))]
+#endif
     [UnitTitle("Object Pool")]
     [UnitSubtitle("Get a object from pool.")]
     [UnitCategory("Luna/Optimization")]
-    [TypeIcon(typeof(Volume))]
+
     public class ObjectPoolNode : ScriptableUnit
     {
         [DoNotSerialize]
