@@ -15,11 +15,20 @@ namespace Luna.UI
     public partial class Widget : MonoBehaviour
     {
         protected bool isDirty = false;
+        public RectTransform RectTransform => transform as RectTransform;
+        public CanvasRenderer CanvasRenderer => GetComponent<CanvasRenderer>();
+        public CanvasGroup CanvasGroup => GetComponent<CanvasGroup>();
         
         public bool Active
         {
             get => gameObject.activeInHierarchy;
             set => gameObject.SetActive(value);
+        }
+        
+        public float Alpha
+        {
+            get => CanvasGroup.alpha;
+            set => CanvasGroup.alpha = value;
         }
         
         protected Widget() {}

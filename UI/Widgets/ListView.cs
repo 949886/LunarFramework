@@ -217,7 +217,6 @@ namespace Luna.UI
             var content = _scrollRect.content;
 
             // Calculate the number of cells to create based on the size of cell prefab and the size of the content
-            Debug.Log($"{this.GetComponent<RectTransform>().rect.height} {cellPrefab.GetComponent<RectTransform>().rect.height}");
             var cellCount = Mathf.Max(3, Mathf.CeilToInt(this.GetComponent<RectTransform>().rect.height /
                                             cellPrefab.GetComponent<RectTransform>().rect.height) + 1);
             var cellHeight = cellPrefab.GetComponent<RectTransform>().rect.height;
@@ -262,10 +261,10 @@ namespace Luna.UI
             var cellHeight = cellPrefab.GetComponent<RectTransform>().rect.height;
             var scrollHeight = _scrollRect.GetComponent<RectTransform>().rect.height;
             var scrollY = content.anchoredPosition.y;
-            FirstVisibleIndex = Mathf.Clamp(Mathf.FloorToInt(scrollY / cellHeight), 0,itemCount - 1);
-            LastVisibleIndex = Mathf.Clamp(Mathf.CeilToInt((scrollY + scrollHeight) / cellHeight), 0, itemCount - 1);
+            FirstVisibleIndex = Mathf.Clamp(Mathf.RoundToInt(scrollY / cellHeight), 0,itemCount - 1);
+            LastVisibleIndex = Mathf.Clamp(Mathf.RoundToInt((scrollY + scrollHeight) / cellHeight), 0, itemCount - 1);
 
-            // Debug.Log($"{scrollY} First: {firstVisibleIndex}, Last: {lastVisibleIndex}");
+            // Debug.Log($"{scrollY} First: {FirstVisibleIndex}, Last: {LastVisibleIndex}");
 
             for (int i = FirstVisibleIndex; i <= LastVisibleIndex; i++)
             {
