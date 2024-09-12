@@ -35,6 +35,8 @@ namespace Luna.UI.Navigation
         
         public Widget TopWidget => _widgetStack.Peek();
         
+        public Route PreviousRoute => _routeStack.Count > 1 ? _routeStack.Peek() : null;
+        
         // Load the Navigator instance on startup if it doesn't exist
         [RuntimeInitializeOnLoadMethod]
         private static void InitializeRootNavigator()
@@ -155,6 +157,7 @@ namespace Luna.UI.Navigation
             return Instance._Push<T>(callback);
         }
         
+        /// Push a widget to replace the top widget in the stack. <br/>
         public static Task<dynamic> PushReplacement<T>(Action<T> callback = null) where T : Widget
         {
             return Instance._PushReplacement(callback);
@@ -177,14 +180,29 @@ namespace Luna.UI.Navigation
             Instance._Pop(result);
         }
         
+        /// Pop all widgets until the root widget. <br/>
+        /// Returns the root widget.
         public static void PopToRoot()
         {
             Instance._PopToRoot();
         }
         
+        /// Pop widgets until the top widget is of type T. <br/>
+        ///
+        ///  - [T] The type of the target widget.
+        /// 
         public static void PopUntil<T>() where T : Widget
         {
             Instance._PopUntil<T, int>(0);
+        }
+        
+        
+        /// Pop widgets until the top widget is of type T. <br/>
+        /// Return the top widget of type T. <br/>
+        public static T BackTo<T>() where T : Widget
+        {
+            Instance._PopUntil<T, int>(0);
+            return Instance.TopWidget as T;
         }
         
         /// Pop widgets until the top widget is of type T. <br/>
@@ -200,6 +218,12 @@ namespace Luna.UI.Navigation
             Instance._PopUntil<T, U>(result);
         }
         
+        public static T BackTo<T, U>(U result = default) where T : Widget
+        {
+            Instance._PopUntil<T, U>(result);
+            return Instance.TopWidget as T;
+        }
+        
         /// Show a modal widget on top of the current widget. <br/>
         ///
         ///  - [T] The type of the modal widget to be shown.
@@ -211,6 +235,16 @@ namespace Luna.UI.Navigation
         {
             var modalRoute = new ModalRoute<T>(builder, maskDismissible, maskColor, offset);
             return Instance._Push<T>(modalRoute, false);
+        }
+        
+        public static Widget GetPrevious()
+        {
+            return Instance.PreviousRoute?.To;
+        }
+        
+        public static T GetPrevious<T>() where T : Widget
+        {
+            return Instance.PreviousRoute?.To as T;
         }
         
         protected Task<dynamic> _Push(GameObject widgetPrefab, Action<GameObject> callback = null)
