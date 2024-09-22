@@ -10,12 +10,13 @@ using UnityEngine.UI;
 
 namespace Luna.UI.Navigation
 {
-    public class Navigator : MonoBehaviour
+    public partial class Navigator : MonoBehaviour
     {
         // Singleton instance for easy access
         public static Navigator Instance;
         
         private static readonly Stack<Navigator> _navigatorStack = new();
+        
         
         // Reference to the root canvas. If not found, a new canvas will be created.
         public Canvas canvas; 
@@ -27,15 +28,18 @@ namespace Luna.UI.Navigation
         // Pop the top widget when the escape key is pressed
         public bool escToPop = false; 
         
+        
         private readonly Stack<Widget> _widgetStack = new();
         // private readonly Stack<GameObject> _widgetHistory = new();
         private readonly Stack<Route> _routeStack = new();
         
         private bool _isDontDestroyOnLoad = false;
         
+        
         public Widget TopWidget => _widgetStack.Peek();
         
         public Route PreviousRoute => _routeStack.Count > 1 ? _routeStack.Peek() : null;
+        
         
         // Load the Navigator instance on startup if it doesn't exist
         [RuntimeInitializeOnLoadMethod]
