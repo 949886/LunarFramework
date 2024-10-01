@@ -18,6 +18,21 @@ namespace Luna
         
         private static readonly Dictionary<string, AsyncOperationHandle> _labelHandlers = new ();
         
+        public static AsyncOperationHandle<T> Load<T>(string label)
+        {
+            var key = label;
+            if (_labelHandlers.TryGetValue(key, out var cachedHandler))
+            {
+                Debug.Log($"[Widget] Using cached asset: {cachedHandler.Result}");
+                return cachedHandler.Convert<T>();
+            }
+            
+            var handler = Addressables.LoadAssetAsync<T>(label);
+            handler.Completed += op => Debug.Log($"[Widget] Loaded asset: {op.Result}");
+            _labelHandlers.Add(key, handler);
+            return handler;
+        }
+        
         public static Task<IList<T>> Load<T>(params string[] labels)
         {
             var key = string.Join(",", labels);
