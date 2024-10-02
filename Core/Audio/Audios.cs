@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Serialization;
 
-namespace Luna.UI.Audio
+namespace Luna
 {
     namespace Luna.UI
     {

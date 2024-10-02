@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using DG.Tweening;
 using UnityEngine;
 
-namespace Luna.UI.Audio
+namespace Luna
 {
     public static class SFXManager
     {

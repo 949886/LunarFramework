@@ -4,7 +4,7 @@ using DG.Tweening;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
 
-namespace Luna.UI.Audio
+namespace Luna
 {
     public static class BgmManager
     {
