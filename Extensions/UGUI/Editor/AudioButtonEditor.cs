@@ -20,6 +20,7 @@ namespace Luna.Extensions.UGUI
             targetMenuButton.submitAudio = EditorGUILayout.ObjectField("Submit audio", targetMenuButton.submitAudio, typeof(AudioClip), false) as AudioClip;
             targetMenuButton.hoverAudio = EditorGUILayout.ObjectField("Hover audio", targetMenuButton.hoverAudio, typeof(AudioClip), false) as AudioClip;
             targetMenuButton.selectAudio = EditorGUILayout.ObjectField("Select audio", targetMenuButton.selectAudio, typeof(AudioClip), false) as AudioClip;
+            targetMenuButton.mute = EditorGUILayout.Toggle("Mute", targetMenuButton.mute);
         
             EditorGUILayout.Space();
             EditorGUILayout.LabelField("Focus", EditorStyles.boldLabel);

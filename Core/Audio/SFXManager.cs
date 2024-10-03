@@ -38,7 +38,12 @@ namespace Luna
                 audioSources[clip] = audioSource;
             }
         }
-        
+
+        public static void Stop()
+        {
+            sfxAudioSource.Stop();
+        }
+
         public static void Stop(AudioClip clip)
         {
             if (audioSources.ContainsKey(clip))

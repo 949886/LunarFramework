@@ -40,7 +40,7 @@ namespace Luna.UI
         public T cell;
         
         public bool snapToCellWhenSelected = true;
-        public bool selectFirstCellOnEnable = true;
+        public bool selectFirstCellOnEnable = false;
         public bool selectFirstCellOnReload = true;
         public bool keepSelectionOnReload = true;
         
@@ -215,7 +215,6 @@ namespace Luna.UI
             if (index < cells.Count)
             {
                 cells[index].Select();
-                _OnCellSelected(index, cells[index]);
             }
         }
         
