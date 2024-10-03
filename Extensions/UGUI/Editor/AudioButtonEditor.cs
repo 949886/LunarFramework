@@ -14,7 +14,7 @@ namespace Luna.Extensions.UGUI
         {
             AudioButton targetMenuButton = (AudioButton)target;
         
-            EditorGUILayout.LabelField("Glow", EditorStyles.boldLabel);
+            EditorGUILayout.LabelField("Audio", EditorStyles.boldLabel);
 
             targetMenuButton.clickAudio = EditorGUILayout.ObjectField("Click audio", targetMenuButton.clickAudio, typeof(AudioClip), false) as AudioClip;
             targetMenuButton.submitAudio = EditorGUILayout.ObjectField("Submit audio", targetMenuButton.submitAudio, typeof(AudioClip), false) as AudioClip;

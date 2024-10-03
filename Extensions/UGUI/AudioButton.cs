@@ -15,26 +15,50 @@ namespace Luna.Extensions
         public AudioClip hoverAudio;
         public AudioClip selectAudio;
         
+        public bool mute = false;
         public bool focusOnEnable = false;
         
+        private bool _initialized = false;
+        
+        private SelectionState _state = SelectionState.Disabled;
+        
+        
+        protected override void Start()
+        {
+            base.Start();
+            
+            Debug.Log("Start");
+            
+            _initialized = true;
+        }
+
         protected override void OnEnable()
         {
             base.OnEnable();
+            
+            Debug.Log("OnEnable");
         
             if (focusOnEnable) 
                 EventSystem.current.SetSelectedGameObject(gameObject);
         }
 
+        protected override void OnDisable()
+        {
+            base.OnDisable();
+            
+            Debug.Log("OnDisable");
+        }
+
         public override void OnPointerClick(PointerEventData eventData)
         {
             base.OnPointerClick(eventData);
-            SFXManager.Play(clickAudio);
+            PlayAudio(clickAudio);
         }
 
         public override void OnSubmit(BaseEventData eventData)
         {
             base.OnSubmit(eventData);
-            SFXManager.Play(submitAudio);
+            PlayAudio(submitAudio);
         }
         
         protected override void DoStateTransition(SelectionState state, bool instant)
@@ -42,19 +66,30 @@ namespace Luna.Extensions
             base.DoStateTransition(state, instant);
         
             Debug.Log("DoStateTransition: " + state);
+            
+            if (_state == state) return;
 
             switch (state)
             {
                 case SelectionState.Normal: break;
                 case SelectionState.Highlighted:
-                    SFXManager.Play(hoverAudio);
+                    PlayAudio(hoverAudio);
                     break;
                 case SelectionState.Pressed:break;
                 case SelectionState.Selected:
-                    SFXManager.Play(selectAudio);
+                    if (_state is not (SelectionState.Disabled or SelectionState.Pressed))
+                        PlayAudio(selectAudio);
                     break;
                 case SelectionState.Disabled:break;
             }
+            
+            _state = state;
+        }
+        
+        private void PlayAudio(AudioClip clip)
+        {
+            if (!_initialized || !interactable || mute || clip == null) return;
+            SFXManager.Play(clip);
         }
     }
 

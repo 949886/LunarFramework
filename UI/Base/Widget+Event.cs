@@ -1,5 +1,6 @@
 // Created by LunarEclipse on 2024-7-7 20:39.
 
+using Cysharp.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.Controls;
@@ -14,6 +15,8 @@ namespace Luna.UI
         public delegate void InputEventHandler(InputControl input, InputEvent inputEvent);
 
 
+        /// The event will be triggered when a key is pressed or released immediately
+        /// before key event being handled by other components.
         private event KeyEventHandler _OnKey;
         public event KeyEventHandler OnKey
         {
@@ -31,6 +34,26 @@ namespace Luna.UI
             }
         }
         
+        /// The event will be triggered when a key is pressed or released at the end of the frame.
+        private event KeyEventHandler _OnLateKey;
+        public event KeyEventHandler OnLateKey
+        {
+            add
+            {
+                Debug.Log("OnKey added.");
+                _OnLateKey += value;
+                Subscribed = _OnLateKey != null;
+            }
+            remove
+            {
+                Debug.Log("OnKey removed.");
+                _OnLateKey -= value;
+                Subscribed = false;
+            }
+        }
+        
+        /// The event will be triggered when an input is started or ended immediately
+        /// before input event being handled by other components.
         private event InputEventHandler _OnInput;
         public event InputEventHandler OnInput
         {
@@ -44,6 +67,25 @@ namespace Luna.UI
             {
                 Debug.Log("OnInput removed.");
                 _OnInput -= value;
+                Subscribed = false;
+            }
+        }
+        
+        /// The event will be triggered when an input is started or ended at the end of the frame.
+        /// This event is useful when you want to handle input after all other components have handled it.
+        private event InputEventHandler _OnLateInput;
+        public event InputEventHandler OnLateInput
+        {
+            add
+            {
+                Debug.Log("OnInput added.");
+                _OnLateInput += value;
+                Subscribed = _OnLateInput != null;
+            }
+            remove
+            {
+                Debug.Log("OnInput removed.");
+                _OnLateInput -= value;
                 Subscribed = false;
             }
         }
@@ -65,7 +107,7 @@ namespace Luna.UI
         }
 
         
-        private void OnInputEvent(InputEventPtr eventPtr, InputDevice device)
+        private async void OnInputEvent(InputEventPtr eventPtr, InputDevice device)
         {
             // Debug.Log(eventPtr);
             if (!eventPtr.IsA<StateEvent>() && !eventPtr.IsA<DeltaStateEvent>())
@@ -83,11 +125,17 @@ namespace Luna.UI
                 {
                     var result = _OnKey?.Invoke(keyControl, control.IsPressed() ? KeyEvent.Up : KeyEvent.Down);
                     if (result == KeyEventResult.Handled)
-                    {
                         eventPtr.handled = true;
-                    }
                 }
                 
+                // Run at the end of the frame.
+                if (_OnLateInput != null || _OnLateKey != null)
+                {   
+                    await UniTask.Yield(PlayerLoopTiming.LastPostLateUpdate, cancellationToken: this.GetCancellationTokenOnDestroy());
+                    if (control is KeyControl keyControl2)
+                        _OnLateKey?.Invoke(keyControl2, control.IsPressed() ? KeyEvent.Up : KeyEvent.Down);
+                    _OnLateInput?.Invoke(control, control.IsPressed() ? InputEvent.End : InputEvent.Start);
+                }
             }
         }
     }

@@ -74,6 +74,7 @@ namespace Luna.UI
         
         public int Count => Data.Count;
         
+        public bool Initialized => _initialized;
 
         // You should call base.Awake() in the derived class
         // or override this method to customize the initialization of the list view
@@ -84,27 +85,31 @@ namespace Luna.UI
             onCellCreated += OnCellCreated;
         }
 
-        protected virtual async void Start()
+        protected void OnEnable()
         {
-            Reload();
-            isDirty = false;
-            
             if (selectFirstCellOnEnable && cells.Count > 0)
             {
                 // Select first cell
                 var firstCell = cells.First().gameObject;
                 if (firstCell != null)
                 {
-                    await UniTask.NextFrame();
+                    // await UniTask.NextFrame();
                     EventSystem.current.SetSelectedGameObject(firstCell);
                 }
             }
-            
+        }
+
+        protected virtual void Start()
+        {
+            Reload();
+            isDirty = false;
             _initialized = true;
         }
 
         public void Reload()
         {
+            _initialized = false;
+            
             // Clear existing cells
             foreach (var cell in cells)
             {
@@ -129,10 +134,12 @@ namespace Luna.UI
             }
             
             isDirty = false;
+            _initialized = true;
         }
         
         public async Task ReloadAsync()
         {
+            _initialized = false;
             await UniTask.Yield(PlayerLoopTiming.PreUpdate);
             Reload();
         }

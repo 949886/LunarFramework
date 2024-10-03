@@ -23,15 +23,12 @@ namespace Luna
         
         public static void Play(AudioClip clip)
         {
-            if (clip != null)
-                sfxAudioSource.PlayOneShot(clip);
+            sfxAudioSource.PlayOneShot(clip);
         }
         
         /// Create a new audio source and play the clip repeatedly until `Stop` is called.
         public static void PlayRepeatedly(AudioClip clip)
         {
-            if (clip == null) return;
-            
             if (!audioSources.ContainsKey(clip))
             {
                 var audioSource = soundManagerObject.AddComponent<AudioSource>();

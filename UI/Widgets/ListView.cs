@@ -89,6 +89,8 @@ namespace Luna.UI
 
         private bool _initialized;
         private bool _selected;
+        
+        public bool Initialized => _initialized;
 
         protected virtual void Init()
         {
@@ -148,6 +150,20 @@ namespace Luna.UI
                 // fitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
             }
         }
+        
+        protected void OnEnable()
+        {
+            if (selectFirstCellOnEnable && cells.Count > 0)
+            {
+                // Select first cell
+                var firstCell = cells.First().gameObject;
+                if (firstCell != null)
+                {
+                    // await UniTask.NextFrame();
+                    EventSystem.current.SetSelectedGameObject(firstCell);
+                }
+            }
+        }
 
         protected virtual async void Start()
         {
@@ -159,23 +175,13 @@ namespace Luna.UI
             
             Reload();
             isDirty = false;
-
-            if (selectFirstCellOnEnable && cells.Count > 0)
-            {
-                // Select first cell
-                var firstCell = cells.First().gameObject;
-                if (firstCell != null)
-                {
-                    await UniTask.NextFrame();
-                    EventSystem.current.SetSelectedGameObject(firstCell);
-                }
-            }
-
             _initialized = true;
         }
-
+        
         public void Reload()
         {
+            _initialized = false;
+            
             // Clear existing cells
             foreach (var cell in cells)
             {
@@ -204,10 +210,12 @@ namespace Luna.UI
             }
 
             isDirty = false;
+            _initialized = true;
         }
 
         public async Task ReloadAsync()
         {
+            _initialized = false;
             await UniTask.Yield(PlayerLoopTiming.PreUpdate);
             Reload();
         }

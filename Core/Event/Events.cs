@@ -117,6 +117,13 @@ namespace Luna
             SceneManager.sceneUnloaded += (scene) => SceneUnloaded.Invoke(null, scene);
             SceneManager.activeSceneChanged += (oldScene, newScene) => SceneChanged.Invoke(null, (oldScene, newScene));
             // SceneManager.sceneSaved += (scene) => SceneSaved.Invoke(null);
+            
+#if DEVELOPMENT_BUILD || UNITY_EDITOR
+            Debug.unityLogger.logEnabled = true;
+#else
+            Debug.unityLogger.logEnabled = false;
+#endif
+            
         }
 #endif
     }

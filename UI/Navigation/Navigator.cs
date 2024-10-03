@@ -40,6 +40,10 @@ namespace Luna.UI.Navigation
         
         public Route PreviousRoute => _routeStack.Count > 1 ? _routeStack.Peek() : null;
         
+        public event Action<Route> onPushed;
+        public event Action<Route> onPopped;
+        
+        
         
         // Load the Navigator instance on startup if it doesn't exist
         [RuntimeInitializeOnLoadMethod]
@@ -333,6 +337,9 @@ namespace Luna.UI.Navigation
             // Wait for the widget to be popped and release the addressable asset.
             var result = await route.Popped;
             Widget.Unload<T>();
+            
+            onPushed?.Invoke(route);
+            
             return result;
         }
 #else // USE SCRIPTABLE OBJECT
@@ -363,6 +370,8 @@ namespace Luna.UI.Navigation
             // Widget will execute OnEnable and Start methods.
             widget.enabled = true;
             
+            onPushed?.Invoke(route);
+
             return route.Popped;
         }
 #endif
@@ -402,6 +411,8 @@ namespace Luna.UI.Navigation
                 // Show the previous widget
                 if (_widgetStack.Count > 0)
                     _widgetStack.Peek().gameObject.SetActive(true);
+                
+                onPopped?.Invoke(route);
             }
         }
 
@@ -421,6 +432,8 @@ namespace Luna.UI.Navigation
                     // Focus on the last selected object
                     if (focusAutomatically && route?.LastSelected != null)
                         EventSystem.current.SetSelectedGameObject(route.LastSelected);
+                    
+                    onPopped?.Invoke(route);
                     
                     break;
                 }
@@ -445,6 +458,8 @@ namespace Luna.UI.Navigation
                     // Focus on the last selected object
                     if (focusAutomatically && route?.LastSelected != null)
                         EventSystem.current.SetSelectedGameObject(route.LastSelected);
+                    
+                    onPopped?.Invoke(route);
                     
                     break;
                 }

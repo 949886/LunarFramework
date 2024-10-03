@@ -23,12 +23,12 @@ namespace Luna
             var key = label;
             if (_labelHandlers.TryGetValue(key, out var cachedHandler))
             {
-                Debug.Log($"[Widget] Using cached asset: {cachedHandler.Result}");
+                Debug.Log($"[Assets] Using cached asset: {cachedHandler.Result}");
                 return cachedHandler.Convert<T>();
             }
             
             var handler = Addressables.LoadAssetAsync<T>(label);
-            handler.Completed += op => Debug.Log($"[Widget] Loaded asset: {op.Result}");
+            handler.Completed += op => Debug.Log($"[Assets] Loaded asset: {op.Result}");
             _labelHandlers.Add(key, handler);
             return handler;
         }
@@ -43,7 +43,7 @@ namespace Luna
             handler.Completed += op =>
             {
                 foreach (var obj in op.Result)
-                    Debug.Log($"[Widget] Loaded asset: {obj}");
+                    Debug.Log($"[Assets] Loaded asset: {obj}");
             };
             _labelHandlers.Add(key, handler);
             return handler.Task;
@@ -57,7 +57,7 @@ namespace Luna
                 Addressables.Release(_labelHandlers[key]);
                 _labelHandlers.Remove(key);
             }
-            else Debug.LogWarning($"[Widget] Label not found: {key}");
+            else Debug.LogWarning($"[Assets] Label not found: {key}");
         }
         
 #endif
