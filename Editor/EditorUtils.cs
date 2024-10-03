@@ -2,9 +2,11 @@
 
 #if UNITY_EDITOR
 
+using System;
 using UnityEditor;
 using UnityEditor.UI.Extensions;
 using UnityEngine;
+using Object = UnityEngine.Object;
 
 namespace Luna.Utils
 {
@@ -46,6 +48,11 @@ namespace Luna.Utils
             return go;
         }
         
+        public static T LoadAsset<T>(GUID guid) where T : Object
+        {
+            string assetPath = AssetDatabase.GUIDToAssetPath(guid.ToString());
+            return AssetDatabase.LoadAssetAtPath<T>(assetPath);
+        }
     }
 }
 
