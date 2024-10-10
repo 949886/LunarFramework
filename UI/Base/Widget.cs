@@ -49,7 +49,7 @@ namespace Luna.UI
         // protected virtual void Build() {}
         
         
-#if USE_ADDRESSABLES
+#if USE_ADDRESSABLES && !DISABLE_ADDRESSABLE_NAVIGATION
         public static T New<T>(bool active = true, Transform parent = null) where T : Widget
         {
             var prefab = Load<T>();

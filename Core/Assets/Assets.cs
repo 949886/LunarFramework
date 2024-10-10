@@ -18,6 +18,7 @@ namespace Luna
         
         private static readonly Dictionary<string, AsyncOperationHandle> _labelHandlers = new ();
         
+        
         public static AsyncOperationHandle<T> Load<T>(string label)
         {
             var key = label;

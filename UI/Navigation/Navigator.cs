@@ -286,7 +286,7 @@ namespace Luna.UI.Navigation
         }
         
         
-#if USE_ADDRESSABLES
+#if USE_ADDRESSABLES && !DISABLE_ADDRESSABLE_NAVIGATION
         protected async Task<dynamic> _Push<T>(Route<T> route = default, bool hidePrevious = true) where T : Widget
         {
             if (_widgetStack.Count > 0 && hidePrevious)

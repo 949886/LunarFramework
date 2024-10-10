@@ -8,7 +8,7 @@ using UnityEditor.AddressableAssets;
 using UnityEditor.AddressableAssets.Settings;
 using UnityEngine;
 
-namespace Luna.Assets.Editor
+namespace Luna
 {
     [InitializeOnLoad]
     public class AddressableAssetsMonitor

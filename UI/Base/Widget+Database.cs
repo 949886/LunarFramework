@@ -111,7 +111,9 @@ namespace Luna.UI
         {
             return (typeof(T).Namespace ?? "global") + "." + typeof(T).Name;
         }
-#else
+#endif
+
+#if !USE_ADDRESSABLES || DISABLE_ADDRESSABLE_NAVIGATION
         public const string WIDGETS_DB_FILE_NAME = "Widgets.g";
         
         public static List<GameObject> All { get; private set; } = new ();

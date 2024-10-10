@@ -56,7 +56,7 @@ public class WidgetPrefabProcessor : AssetPostprocessor
     
     private static void ProcessPrefab(GameObject prefab)
     {
-#if USE_ADDRESSABLES
+#if USE_ADDRESSABLES && !DISABLE_ADDRESSABLE_NAVIGATION
         var component = prefab.GetComponent<Widget>();
         if (component == null) return;
         
@@ -109,7 +109,7 @@ public class WidgetPrefabProcessor : AssetPostprocessor
 
     private static void RemoveAllMissingPrefabs()
     {
-#if USE_ADDRESSABLES
+#if USE_ADDRESSABLES && !DISABLE_ADDRESSABLE_NAVIGATION
         // AddressableAssetSettings settings = AddressableAssetSettingsDefaultObject.Settings;
         // AddressableAssetGroup group = settings.FindGroup("Widgets");
         // if (group != null)

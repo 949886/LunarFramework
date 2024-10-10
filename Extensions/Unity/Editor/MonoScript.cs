@@ -23,13 +23,26 @@ namespace Luna.Internal
         
         public MonoScript(Type type)
         {
+#if UNITY_6000_0_OR_NEWER
             monoScript = UnityEditor.MonoScript.FromType(type);
+#else
+            var o = Activator.CreateInstance(type);
+            if (type.IsSubclassOf(typeof(MonoBehaviour)))
+                monoScript = UnityEditor.MonoScript.FromMonoBehaviour(o as MonoBehaviour);
+            else if (type.IsSubclassOf(typeof(ScriptableObject)))
+                monoScript = UnityEditor.MonoScript.FromScriptableObject(o as ScriptableObject);
+            else if (type.IsSubclassOf(typeof(UnityEngine.Object)))
+                monoScript = UnityEditor.MonoScript.FromScriptedObject(o as UnityEngine.Object);
+            else throw new ArgumentException($"Type {type} is not a valid type for MonoScript");
+#endif
         }
         
+#if UNITY_6000_0_OR_NEWER
         public MonoScript(string className, string nameSpace, string assemblyName)
         {
             monoScript = UnityEditor.MonoScript.FromTypeInternal(className, nameSpace, assemblyName);
         }
+#endif
 
         private MonoScript(UnityEditor.MonoScript monoScript)
         {
@@ -51,10 +64,12 @@ namespace Luna.Internal
             return new MonoScript(type);
         }
 
+#if UNITY_6000_0_OR_NEWER
         public static MonoScript From(string className, string nameSpace, string assemblyName)
         {
             return new MonoScript(className, nameSpace, assemblyName);
         }
+#endif
         
         public Type GetClass()
         {
