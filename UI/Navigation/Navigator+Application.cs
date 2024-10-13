@@ -35,7 +35,7 @@ namespace Luna.UI.Navigation
         ///  - packageName: The package name of the application, e.g. "com.example.myapplication".
         ///  - data: The data to pass to the application.
         /// 
-        public static void LaunchApplication<T>(string packageName, T data)
+        public static void LaunchApplication<T>(string packageName, T data, string key = "data")
         {
             using (var unityPlayer = new AndroidJavaClass("com.unity3d.player.UnityPlayer"))
             using (var currentActivity = unityPlayer.GetStatic<AndroidJavaObject>("currentActivity"))
@@ -45,7 +45,7 @@ namespace Luna.UI.Navigation
                 if (intent != null)
                 {
                     // intent.Call<AndroidJavaObject>("addFlags", 0x10000000); // FLAG_ACTIVITY_NEW_TASK
-                    intent.Call("putExtra", "data", data);
+                    intent.Call<AndroidJavaObject>("putExtra", key, data);
                     currentActivity.Call("startActivity", intent);
                 }
             }
@@ -72,13 +72,13 @@ namespace Luna.UI.Navigation
         ///  - uri: The URI of the application, e.g. open Google Play Store with "market://details?id=" + appPackageName.
         ///  - data: The data to pass to the application.
         /// 
-        public static void LaunchApplication<T>(Uri uri, T data)
+        public static void LaunchApplication<T>(Uri uri, T data, string key = "data")
         {
             using (var unityPlayer = new AndroidJavaClass("com.unity3d.player.UnityPlayer"))
             using (var currentActivity = unityPlayer.GetStatic<AndroidJavaObject>("currentActivity"))
             {
                 AndroidJavaObject intent = new AndroidJavaObject("android.content.Intent", "android.intent.action.VIEW", uri);
-                intent.Call("putExtra", "data", data);
+                intent.Call<AndroidJavaObject>("putExtra", key, data);
                 currentActivity.Call("startActivity", intent);
             }
         }
