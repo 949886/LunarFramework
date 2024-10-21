@@ -16,7 +16,7 @@ namespace Luna.UI
     [RequireComponent(typeof(ScrollRect), typeof(Mask), typeof(Image))]
     public abstract class ListView<T, U> : Widget where T : ListViewCell<U>
     {
-        private List<U> data;
+        private List<U> data = new();
         
         public List<U> Data
         {

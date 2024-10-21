@@ -18,7 +18,7 @@ namespace Luna.UI
     public abstract class FixedListView<T, U> : Widget where T : FixedListViewCell<U>
     {
         [SerializeField] 
-        protected List<U> data;
+        protected List<U> data = new();
         
         public List<U> Data
         {
