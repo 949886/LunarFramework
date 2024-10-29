@@ -9,6 +9,12 @@ namespace Luna
     public static class BgmManager
     {
         private static AudioSource audioSource;
+        
+        public static float Volume
+        {
+            get => audioSource.volume;
+            set => audioSource.volume = value;
+        }
 
         [RuntimeInitializeOnLoadMethod]
         static void Initialize()

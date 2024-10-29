@@ -11,8 +11,19 @@ namespace Luna
         private static GameObject soundManagerObject;
         private static AudioSource sfxAudioSource;
 
-        private static Dictionary<AudioClip, AudioSource> audioSources = new Dictionary<AudioClip, AudioSource>();
+        private static Dictionary<AudioClip, AudioSource> audioSources = new();
         
+        public static float Volume
+        {
+            get => sfxAudioSource.volume;
+            set
+            {
+                sfxAudioSource.volume = value;
+                foreach (var audioSource in audioSources.Values)
+                    audioSource.volume = value;
+            }
+        }
+
         [RuntimeInitializeOnLoadMethod]
         static void Initialize()
         {
@@ -34,6 +45,7 @@ namespace Luna
                 var audioSource = soundManagerObject.AddComponent<AudioSource>();
                 audioSource.clip = clip;
                 audioSource.loop = true;
+                audioSource.volume = Volume;
                 audioSource.Play();
                 audioSources[clip] = audioSource;
             }
@@ -76,6 +88,11 @@ namespace Luna
                 Object.Destroy(audioSource);
             }
             audioSources.Clear();
+        }
+        
+        public static void SetVolume(float volume, float duration = 0.5f)
+        {
+            DOTween.To(() => Volume, x => Volume = x, volume, duration);
         }
     }   
 }
