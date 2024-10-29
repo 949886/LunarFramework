@@ -156,11 +156,11 @@ namespace Luna.UI
             if (selectFirstCellOnEnable && cells.Count > 0)
             {
                 // Select first cell
-                var firstCell = cells.First().gameObject;
+                var firstCell = cells.First();
                 if (firstCell != null)
                 {
                     // await UniTask.NextFrame();
-                    EventSystem.current.SetSelectedGameObject(firstCell);
+                    firstCell.Select();
                 }
             }
         }
@@ -199,8 +199,11 @@ namespace Luna.UI
             // Create new cells
             CreateCells();
 
+            isDirty = false;
+            _initialized = true;
+
             // Keep selection
-            if (_initialized && keepSelectionOnReload && cells.Count > 0)
+            if (keepSelectionOnReload && data.Count > 0)
             {
                 if (SelectedIndex < cells.Count)
                     cells[SelectedIndex].Select();
@@ -208,9 +211,6 @@ namespace Luna.UI
 
                 SelectedIndex = Mathf.Clamp(SelectedIndex, 0, cells.Count - 1);
             }
-
-            isDirty = false;
-            _initialized = true;
         }
 
         public async Task ReloadAsync()

@@ -26,13 +26,20 @@ namespace Luna.Internal
 #if UNITY_6000_0_OR_NEWER
             monoScript = UnityEditor.MonoScript.FromType(type);
 #else
-            var o = Activator.CreateInstance(type);
             if (type.IsSubclassOf(typeof(MonoBehaviour)))
-                monoScript = UnityEditor.MonoScript.FromMonoBehaviour(o as MonoBehaviour);
+            {
+                var go = new GameObject();
+                var c = go.AddComponent(type);
+                monoScript = UnityEditor.MonoScript.FromMonoBehaviour(c as MonoBehaviour);
+                UnityEngine.Object.DestroyImmediate(go);
+            }
             else if (type.IsSubclassOf(typeof(ScriptableObject)))
-                monoScript = UnityEditor.MonoScript.FromScriptableObject(o as ScriptableObject);
-            else if (type.IsSubclassOf(typeof(UnityEngine.Object)))
-                monoScript = UnityEditor.MonoScript.FromScriptedObject(o as UnityEngine.Object);
+            {
+                var so = ScriptableObject.CreateInstance(type);
+                monoScript = UnityEditor.MonoScript.FromScriptableObject(so);
+            }
+            // else if (type.IsSubclassOf(typeof(UnityEngine.Object)))
+            //     monoScript = UnityEditor.MonoScript.FromScriptedObject(c as UnityEngine.Object);
             else throw new ArgumentException($"Type {type} is not a valid type for MonoScript");
 #endif
         }

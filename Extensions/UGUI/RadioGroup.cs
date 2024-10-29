@@ -15,6 +15,16 @@ namespace Luna.Extensions.UGUI
     {
         public List<Toggle> Toggles => base.m_Toggles;
         
+        [Header("Binding")]
+        public Slider slider;
+        
+        protected override void Start()
+        {
+            base.Start();
+            if (slider != null)
+                Bind(slider);
+        }
+        
         public void Add(Toggle toggle)
         {
             base.RegisterToggle(toggle);

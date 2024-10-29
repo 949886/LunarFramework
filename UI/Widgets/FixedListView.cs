@@ -123,8 +123,11 @@ namespace Luna.UI
             // Create new cells
             CreateCells();
             
+            isDirty = false;
+            _initialized = true;
+            
             // Keep selection
-            if (_initialized && keepSelectionOnReload && cells.Count > 0)
+            if (keepSelectionOnReload && cells.Count > 0)
             {
                 if (SelectedIndex < cells.Count)
                     cells[SelectedIndex].Select();
@@ -132,9 +135,6 @@ namespace Luna.UI
                 
                 SelectedIndex = Mathf.Clamp(SelectedIndex, 0, cells.Count - 1);
             }
-            
-            isDirty = false;
-            _initialized = true;
         }
         
         public async Task ReloadAsync()
@@ -215,6 +215,7 @@ namespace Luna.UI
             if (index < cells.Count)
             {
                 cells[index].Select();
+                SelectedIndex = index;
             }
         }
         
