@@ -219,7 +219,7 @@ namespace Luna.UI
             }
         }
         
-        public void Remove(int index)
+        public void Remove(int index, bool autoFocus = true)
         {
             if (index < cells.Count && index >= 0)
             {
@@ -229,9 +229,10 @@ namespace Luna.UI
                 if (cells.Count == 0) return;
                 var focusIndex = index < cells.Count ? index : cells.Count - 1;
                 
-                UniTask.NextFrame().ContinueWith(() => {
-                    FocusOnCell(focusIndex, true);
-                });
+                if (autoFocus)
+                    UniTask.NextFrame().ContinueWith(() => {
+                        FocusOnCell(focusIndex, true);
+                    });
             }
         }
         
