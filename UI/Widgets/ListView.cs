@@ -167,7 +167,7 @@ namespace Luna.UI
 
         protected virtual async void Start()
         {
-            if (Data != null)
+            if (Data != null && Data.Count > 0)
             {
                 itemCount = Data.Count;
                 _itemBuilder ??= i => Data[i.Mod(itemCount)];
