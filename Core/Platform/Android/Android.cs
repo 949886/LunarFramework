@@ -70,6 +70,13 @@ namespace Luna
                 toast.Call("show");
             }));
         }
+        
+        public static void Back()
+        {
+            currentActivity.Call("runOnUiThread", new AndroidJavaRunnable(() => {
+                currentActivity.Call("onBackPressed");
+            }));
+        }
     }
 }
 
