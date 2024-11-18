@@ -32,9 +32,9 @@ namespace Luna
             Object.DontDestroyOnLoad(soundManagerObject);
         }
         
-        public static void Play(AudioClip clip)
+        public static void Play(AudioClip clip, float volumeScale = 1.0f)
         {
-            sfxAudioSource.PlayOneShot(clip);
+            sfxAudioSource.PlayOneShot(clip, volumeScale);
         }
         
         /// Create a new audio source and play the clip repeatedly until `Stop` is called.
