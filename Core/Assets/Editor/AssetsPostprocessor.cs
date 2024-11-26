@@ -66,6 +66,10 @@ namespace Luna
             foreach (var guid in guids)
             {
                 string path = AssetDatabase.GUIDToAssetPath(guid);
+                
+                if (path.StartsWith("Packages/"))
+                    continue;
+                
                 var audioClip = AssetDatabase.LoadAssetAtPath<AudioClip>(path);
                 if (audioClip != null)
                 {
@@ -188,7 +192,7 @@ namespace Luna
             
             // Compare the old and new code.
             var oldCode = LoadGeneratedCode();
-            if (oldCode == code)
+            if (oldCode == code || string.IsNullOrEmpty(code))
             {
                 Debug.Log("AudioPostprocessor: No changes detected. Skipping...");
                 return;
