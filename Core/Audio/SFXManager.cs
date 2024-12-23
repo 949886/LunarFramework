@@ -82,6 +82,8 @@ namespace Luna
         
         public static void StopAll()
         {
+            sfxAudioSource.Stop();
+            
             foreach (var audioSource in audioSources.Values)
             {
                 audioSource.Stop();
