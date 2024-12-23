@@ -424,10 +424,15 @@ namespace Luna.UI.Navigation
                 var route = _routeStack.Pop();
                 Destroy(widget.gameObject);
                 
+                if (route != null)
+                {
+                    route.OnPop();
+                    route.popCompleter.SetResult(default);   
+                }
+                
                 if (_widgetStack.Count == 1)
                 {
                     TopWidget.gameObject.SetActive(true);
-                    route.popCompleter.SetResult(0);
                     
                     // Focus on the last selected object
                     if (focusAutomatically && route?.LastSelected != null)
@@ -448,12 +453,14 @@ namespace Luna.UI.Navigation
                 var route = _routeStack.Pop();
                 Destroy(widget.gameObject);
                 
+                route?.OnPop();
+                
                 if (TopWidget is T)
                 {
                     TopWidget.gameObject.SetActive(true);
                     
                     // Pass the result to the target widget
-                    route.popCompleter.SetResult(result);
+                    route?.popCompleter.SetResult(result);
                     
                     // Focus on the last selected object
                     if (focusAutomatically && route?.LastSelected != null)
@@ -463,6 +470,7 @@ namespace Luna.UI.Navigation
                     
                     break;
                 }
+                else route?.popCompleter.SetResult(default);
             }
         }
     }
