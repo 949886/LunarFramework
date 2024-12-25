@@ -1,5 +1,7 @@
 // Created by LunarEclipse on 2024-7-30 17:59.
 
+using System.Collections.Generic;
+using Cysharp.Threading.Tasks;
 using DG.Tweening;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
@@ -51,6 +53,25 @@ namespace Luna
                 });
             }
             else FadeIn(fadeDuration);
+        }
+        
+        public static async void PlaySequentially(List<AudioClip> clips, float fadeDuration = 1.0f)
+        {
+            foreach (var clip in clips)
+            {
+                Play(clip, fadeDuration);
+                await UniTask.Delay((int)((clip.length + fadeDuration) * 1000));
+            }
+        }
+        
+        public static async void PlayRandomly(List<AudioClip> clips, float fadeDuration = 1.0f)
+        {
+            while (true)
+            {
+                var clip = clips[Random.Range(0, clips.Count)];
+                Play(clip, fadeDuration);
+                await UniTask.Delay((int)((clip.length + fadeDuration) * 1000));
+            }
         }
         
         public static void Play(AssetReferenceT<AudioClip> clipRef)

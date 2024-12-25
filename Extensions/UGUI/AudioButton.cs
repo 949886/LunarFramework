@@ -26,9 +26,6 @@ namespace Luna.Extensions
         protected override void Start()
         {
             base.Start();
-            
-            Debug.Log("Start");
-            
             _initialized = true;
         }
 
@@ -36,8 +33,6 @@ namespace Luna.Extensions
         {
             base.OnEnable();
             
-            Debug.Log("OnEnable");
-        
             if (focusOnEnable) 
                 EventSystem.current.SetSelectedGameObject(gameObject);
         }
@@ -45,8 +40,6 @@ namespace Luna.Extensions
         protected override void OnDisable()
         {
             base.OnDisable();
-            
-            Debug.Log("OnDisable");
         }
 
         public override void OnPointerClick(PointerEventData eventData)
@@ -67,7 +60,11 @@ namespace Luna.Extensions
         
             Debug.Log("DoStateTransition: " + state);
             
-            if (_state == state) return;
+            if (_state == state || !_initialized)
+            {
+                _state = state;
+                return;
+            }
 
             switch (state)
             {
