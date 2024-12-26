@@ -14,8 +14,7 @@ using UnityEngine.UI;
 
 namespace Luna.UI
 {
-    [RequireComponent(typeof(ScrollRect))]
-    public abstract class FixedListView<T, U> : Widget where T : FixedListViewCell<U>
+    public abstract class FixedListView<T, U> : BaseListView where T : FixedListViewCell<U>
     {
         [SerializeField] 
         protected List<U> data = new();
@@ -39,10 +38,11 @@ namespace Luna.UI
         /// The cell prefab to be instantiated for each item in the list view.
         public T cell;
         
-        public bool snapToCellWhenSelected = true;
+
         public bool selectFirstCellOnEnable = false;
         public bool selectFirstCellOnReload = true;
         public bool keepSelectionOnReload = true;
+        public bool snapToCellWhenSelected = true;
         
         public delegate void CellCallback(int index, T listViewCell);
 
@@ -60,13 +60,9 @@ namespace Luna.UI
         
         public readonly List<T> cells = new();
         
-        protected ScrollRect _scrollRect;
-        
         private bool _initialized;
         private bool _selected;
         
-        
-        public int SelectedIndex { get; private set; }
         public U SelectedData => Data[SelectedIndex];
         
         /// Return true any cell is selected.
@@ -76,6 +72,7 @@ namespace Luna.UI
         
         public bool Initialized => _initialized;
 
+        
         // You should call base.Awake() in the derived class
         // or override this method to customize the initialization of the list view
         protected virtual void Awake()
@@ -194,6 +191,7 @@ namespace Luna.UI
         private void _OnCellSelected(int index, FixedListViewCell<U> listViewCell)
         {
             _selected = true;
+            PreviousIndex = SelectedIndex;
             SelectedIndex = index;
             OnCellSelected(index, listViewCell as T);
             onCellSelected?.Invoke(index, listViewCell as T);
@@ -240,21 +238,6 @@ namespace Luna.UI
         {
             Data.Insert(atIndex, item);
             Reload();
-        }
-
-        public void SnapTo(int index)
-        {
-            if (index < cells.Count)
-                SnapTo(cells[index].transform as RectTransform);
-        }
-        
-        /// Override this method to customize the snap behavior.
-        public virtual void SnapTo(RectTransform target)
-        {
-            var y = -target.offsetMin.y - ((RectTransform)_scrollRect.transform).rect.height;
-            y = Mathf.Clamp(y, 0, _scrollRect.content.rect.height);
-            var pos = new Vector2(_scrollRect.content.anchoredPosition.x, y);
-            DOTween.To(() => _scrollRect.content.anchoredPosition, v => _scrollRect.content.anchoredPosition = v, pos, 0.5f);
         }
         
         public void FocusOnCell(int index, bool autoSnap = false)

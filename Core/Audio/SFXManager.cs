@@ -1,8 +1,11 @@
 // Created by LunarEclipse on 2024-7-14 7:54.
 
+using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using DG.Tweening;
 using UnityEngine;
+using Object = UnityEngine.Object;
 
 namespace Luna
 {
@@ -48,6 +51,25 @@ namespace Luna
                 audioSource.volume = Volume;
                 audioSource.Play();
                 audioSources[clip] = audioSource;
+            }
+        }
+        
+        public static async Task PlayOccasionally(AudioClip clip, (float min, float max) waitTime, bool loop = true)
+        {
+            if (audioSources.ContainsKey(clip))
+                return;
+            
+            var delay = UnityEngine.Random.Range(waitTime.min, waitTime.max);
+            var audioSource = soundManagerObject.AddComponent<AudioSource>();
+            audioSource.clip = clip;
+            audioSource.loop = false;
+            audioSource.volume = Volume;
+            audioSources[clip] = audioSource;
+            
+            while (loop && audioSources.ContainsKey(clip)) 
+            {
+                audioSource.PlayDelayed(delay);
+                await Task.Delay(TimeSpan.FromSeconds(clip.length + delay));
             }
         }
 

@@ -14,7 +14,7 @@ using UnityEngine.UI;
 namespace Luna.UI
 {
     [RequireComponent(typeof(ScrollRect), typeof(Mask), typeof(Image))]
-    public abstract class ListView<T, U> : Widget where T : ListViewCell<U>
+    public abstract class ListView<T, U> : BaseListView where T : ListViewCell<U>
     {
         private List<U> data = new();
         
@@ -53,7 +53,6 @@ namespace Luna.UI
         public int itemCount;
 
 
-        public int SelectedIndex { get; private set; }
         public int FirstVisibleIndex { get; private set; }
         public int LastVisibleIndex { get; private set; }
 
@@ -83,7 +82,6 @@ namespace Luna.UI
 
         public readonly List<T> cells = new();
 
-        protected ScrollRect _scrollRect;
         protected Mask _mask;
         protected Image _maskImage;
 
@@ -91,6 +89,7 @@ namespace Luna.UI
         private bool _selected;
         
         public bool Initialized => _initialized;
+        
 
         protected virtual void Init()
         {
@@ -288,13 +287,9 @@ namespace Luna.UI
             }
         }
 
-        public void SnapTo(RectTransform target)
+        public override void SnapTo(RectTransform target)
         {
-            // var y = -target.offsetMin.y - ((RectTransform)_scrollRect.transform).rect.height;
-            // y = Mathf.Clamp(y, 0, _scrollRect.content.rect.height);
-            // var pos = new Vector2(_scrollRect.content.anchoredPosition.x, y);
-            // DOTween.To(() => _scrollRect.content.anchoredPosition, v => _scrollRect.content.anchoredPosition = v, pos,
-            //     0.5f);
+            
         }
 
         public void FocusOnCell(int index)
