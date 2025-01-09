@@ -234,6 +234,11 @@ namespace Luna.UI
             }
         }
         
+        public void RemoveSelected()
+        {
+            Remove(SelectedIndex);
+        }
+        
         public void Add(U item, int atIndex)
         {
             Data.Insert(atIndex, item);
@@ -250,6 +255,12 @@ namespace Luna.UI
             
             if (autoSnap)
                 SnapTo(cell.transform as RectTransform);
+        }
+
+        public void FocusOnCell(T cell, bool autoSnap = false)
+        {
+            var index = cells.IndexOf(cell);
+            FocusOnCell(index, autoSnap);
         }
     }
     

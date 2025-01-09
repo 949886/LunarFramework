@@ -1,19 +1,19 @@
-#if USE_TEXTMESHPRO
+// Created by LunarEclipse on 2025-01-08
 
 using System;
 using Cysharp.Threading.Tasks;
 using TMPro;
 using UnityEngine.EventSystems;
 
-namespace Luna.Extensions.UGUI
+namespace Extensions.UGUI
 {
-    public class TextField: TMP_InputField, ISelectHandler
+
+    public class ConsoleInputField : TMP_InputField
     {
-        public bool editOnFocus = false;
+        // public TMP_InputField inputField;
         
         public event Action<TMP_InputField, string> onInputValueChanged;
         public event Action<TMP_InputField, string> onInputEnd;
-        
         
         void Start()
         {
@@ -22,7 +22,7 @@ namespace Luna.Extensions.UGUI
             this.onValueChanged.AddListener(OnInputValueChanged);
             this.onEndEdit.AddListener(OnInputEnd);
         }
-        
+
         private void OnInputEnd(string value)
         {
             this.Select();
@@ -33,17 +33,20 @@ namespace Luna.Extensions.UGUI
         {
             onInputValueChanged?.Invoke(this, newValue);
         }
-        
-        public override async void OnSelect(BaseEventData eventData)
+
+        public override void OnSelect(BaseEventData eventData)
         {
             base.OnSelect(eventData);
-
-            await UniTask.Yield(PlayerLoopTiming.PostLateUpdate);
             
-            if (!editOnFocus)
-                DeactivateInputField();
+            this.DeactivateInputField();
+        }
+        
+        public override async void OnSubmit(BaseEventData eventData)
+        {
+            base.OnSubmit(eventData);
+            
+            await UniTask.NextFrame();
+            this.Select();
         }
     }
 }
-
-#endif

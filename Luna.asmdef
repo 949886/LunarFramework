@@ -76,6 +76,11 @@
             "name": "com.unity.render-pipelines.universal",
             "expression": "1",
             "define": "USE_URP"
+        },
+        {
+            "name": "com.unity.textmeshpro",
+            "expression": "1",
+            "define": "USE_TEXTMESHPRO"
         }
     ],
     "noEngineReferences": false
