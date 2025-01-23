@@ -2,6 +2,7 @@
 
 #if USE_UGUI
 
+using Cysharp.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
@@ -18,7 +19,7 @@ namespace Luna.Extensions
         public bool mute = false;
         public bool focusOnEnable = false;
         
-        private bool _initialized = false;
+        private bool _ready = false;
         
         private SelectionState _state = SelectionState.Disabled;
         
@@ -26,20 +27,25 @@ namespace Luna.Extensions
         protected override void Start()
         {
             base.Start();
-            _initialized = true;
+            _ready = true;
         }
 
-        protected override void OnEnable()
+        protected override async void OnEnable()
         {
             base.OnEnable();
             
             if (focusOnEnable) 
                 EventSystem.current.SetSelectedGameObject(gameObject);
+
+            await UniTask.NextFrame();
+            _ready = true;
         }
 
         protected override void OnDisable()
         {
             base.OnDisable();
+            _ready = false;
+            _state = SelectionState.Disabled;
         }
 
         public override void OnPointerClick(PointerEventData eventData)
@@ -50,21 +56,20 @@ namespace Luna.Extensions
 
         public override void OnSubmit(BaseEventData eventData)
         {
-            base.OnSubmit(eventData);
             PlayAudio(submitAudio);
+            base.OnSubmit(eventData);
         }
         
         protected override void DoStateTransition(SelectionState state, bool instant)
         {
             base.DoStateTransition(state, instant);
-        
-            Debug.Log("DoStateTransition: " + state);
             
-            if (_state == state || !_initialized)
-            {
-                _state = state;
+            if (_state == state || !_ready)
                 return;
-            }
+            
+            _state = state;
+            
+            Debug.Log($"DoStateTransition: {state} : {gameObject.activeInHierarchy}");
 
             switch (state)
             {
@@ -85,7 +90,7 @@ namespace Luna.Extensions
         
         private void PlayAudio(AudioClip clip)
         {
-            if (!_initialized || !interactable || mute || clip == null) return;
+            if (!_ready || !interactable || mute || clip == null) return;
             SFXManager.Play(clip);
         }
     }
