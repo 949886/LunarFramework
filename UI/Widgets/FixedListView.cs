@@ -64,6 +64,7 @@ namespace Luna.UI
         private bool _selected;
         
         public U SelectedData => Data[SelectedIndex];
+        public T SelectedCell => cells[SelectedIndex];
         
         /// Return true any cell is selected.
         public bool Selected => _selected;
@@ -71,6 +72,10 @@ namespace Luna.UI
         public int Count => Data.Count;
         
         public bool Initialized => _initialized;
+
+        public Rect CellSize => ((RectTransform)cell.transform).rect;
+
+        public int VisibleIndex => Mathf.RoundToInt((-((RectTransform)SelectedCell.transform).anchoredPosition.y - ScrollOffset.y) / CellSize.height) - 1;
 
         
         // You should call base.Awake() in the derived class
