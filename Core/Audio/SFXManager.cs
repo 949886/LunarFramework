@@ -54,12 +54,31 @@ namespace Luna
             }
         }
         
-        public static async Task PlayOccasionally(AudioClip clip, (float min, float max) waitTime, bool loop = true)
+        public static async void PlayRepeatedly(AudioClip clip, (float min, float max) interval)
+        {
+            var audioSource = audioSources.GetValueOrDefault(clip);
+            if (audioSource == null)
+            {
+                audioSource = soundManagerObject.AddComponent<AudioSource>();
+                audioSource.clip = clip;
+                audioSource.loop = false;
+                audioSource.volume = Volume;
+                audioSources[clip] = audioSource;
+            }
+
+            while (audioSources.ContainsKey(clip))
+            {
+                var delay = UnityEngine.Random.Range(interval.min, interval.max);
+                audioSource.PlayOneShot(clip);
+                await Task.Delay(TimeSpan.FromSeconds(clip.length + delay));
+            }
+        }
+        
+        public static async Task PlayOccasionally(AudioClip clip, (float min, float max) interval, bool loop = true)
         {
             if (audioSources.ContainsKey(clip))
                 return;
             
-            var delay = UnityEngine.Random.Range(waitTime.min, waitTime.max);
             var audioSource = soundManagerObject.AddComponent<AudioSource>();
             audioSource.clip = clip;
             audioSource.loop = false;
@@ -68,6 +87,7 @@ namespace Luna
             
             while (loop && audioSources.ContainsKey(clip)) 
             {
+                var delay = UnityEngine.Random.Range(interval.min, interval.max);
                 audioSource.PlayDelayed(delay);
                 await Task.Delay(TimeSpan.FromSeconds(clip.length + delay));
             }
