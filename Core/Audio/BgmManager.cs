@@ -4,7 +4,10 @@ using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
 using DG.Tweening;
 using UnityEngine;
+
+#if USE_ADDRESSABLES
 using UnityEngine.AddressableAssets;
+#endif
 
 namespace Luna
 {
@@ -55,6 +58,19 @@ namespace Luna
             else FadeIn(fadeDuration);
         }
         
+#if USE_ADDRESSABLES
+        public static void Play(AssetReferenceT<AudioClip> clipRef)
+        {
+            var previousClip = audioSource.clip;
+            
+            clipRef.LoadAssetAsync().Completed += handle =>
+            {
+                Play(handle.Result);
+                Addressables.Release(previousClip);
+            };
+        }
+#endif
+        
         public static async void PlaySequentially(List<AudioClip> clips, float fadeDuration = 1.0f)
         {
             foreach (var clip in clips)
@@ -72,17 +88,6 @@ namespace Luna
                 Play(clip, fadeDuration);
                 await UniTask.Delay((int)((clip.length + fadeDuration) * 1000));
             }
-        }
-        
-        public static void Play(AssetReferenceT<AudioClip> clipRef)
-        {
-            var previousClip = audioSource.clip;
-            
-            clipRef.LoadAssetAsync().Completed += handle =>
-            {
-                Play(handle.Result);
-                Addressables.Release(previousClip);
-            };
         }
         
         public static void Stop()

@@ -66,7 +66,7 @@ namespace Luna
                 audioSources[clip] = audioSource;
             }
 
-            while (audioSources.ContainsKey(clip))
+            while (audioSources.ContainsKey(clip) && audioSource != null)
             {
                 var delay = UnityEngine.Random.Range(interval.min, interval.max);
                 audioSource.PlayOneShot(clip);
@@ -85,7 +85,7 @@ namespace Luna
             audioSource.volume = Volume;
             audioSources[clip] = audioSource;
             
-            while (loop && audioSources.ContainsKey(clip)) 
+            while (loop && audioSources.ContainsKey(clip) && audioSource != null) 
             {
                 var delay = UnityEngine.Random.Range(interval.min, interval.max);
                 audioSource.PlayDelayed(delay);

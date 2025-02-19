@@ -11,8 +11,11 @@ using Luna.Luna.UI;
 using Luna.Utils;
 using UnityEngine;
 using UnityEditor;
+
+#if USE_ADDRESSABLES
 using UnityEditor.AddressableAssets;
 using UnityEditor.AddressableAssets.Settings;
+#endif
 
 using AudioDict = System.Collections.Generic.Dictionary<string, (UnityEngine.AudioClip audioClip, string path)>;
 
@@ -56,9 +59,6 @@ namespace Luna
         private static void Initialize()
         {
             RemoveAllMissingAudios();
-            
-            // Get the default addressable settings
-            AddressableAssetSettings settings = AddressableAssetSettingsDefaultObject.Settings;
             
             var audioClips = new AudioDict();
             
