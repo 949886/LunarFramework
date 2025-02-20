@@ -19,7 +19,7 @@ namespace Luna
         {
             this.address = address;
             // handler = Addressables.LoadAssetAsync<T>(address);
-            handler = Assets.Load<T>(address);
+            handler = Assets.LoadHandle<T>(address);
         }
         
         public async ValueTask DisposeAsync()
@@ -43,7 +43,10 @@ namespace Luna
 
         public static T operator !(Asset<T> asset)
         {
+            var stopWatch = System.Diagnostics.Stopwatch.StartNew();
             asset.handler.WaitForCompletion();
+            stopWatch.Stop();
+            Debug.Log($"[Asset] Loaded asset: {asset.handler.Result.name} in {stopWatch.ElapsedMilliseconds}ms.");
             return asset.handler.Result;
         }
     }

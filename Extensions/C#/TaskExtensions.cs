@@ -13,7 +13,13 @@ namespace Luna.Extensions
             action(task);
         }
         
-        public static async Task<U> Then<T,U>(this Task<T> task, Func<T,U> func)
+        public static async void Then<T>(this Task<T> task, Action<T> action)
+        {
+            var result = await task;
+            action(result);
+        }
+        
+        public static async Task<U> Then<T, U>(this Task<T> task, Func<T,U> func)
         {
             var result = await task;
             return func(result);
