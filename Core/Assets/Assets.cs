@@ -7,6 +7,7 @@ using UnityEngine;
 using Object = UnityEngine.Object;
 
 #if USE_ADDRESSABLES
+using System;
 using UnityEngine.AddressableAssets;
 using UnityEngine.ResourceManagement.AsyncOperations;
 #endif
@@ -27,7 +28,7 @@ namespace Luna
         
         public static async Task<T> Load<T>(string label)
         {
-            await UniTask.Yield(PlayerLoopTiming.PostLateUpdate);
+            await UniTask.DelayFrame(5);
             return await LoadHandle<T>(label).Task;
         }
 
@@ -38,19 +39,19 @@ namespace Luna
         
         public static async Task<IList<T>> Load<T>(params string[] labels)
         {
-            await UniTask.Yield(PlayerLoopTiming.PostLateUpdate);
+            await UniTask.DelayFrame(5);
             
             var key = string.Join(",", labels);
             if (_labelHandlers.TryGetValue(key, out var cachedHandler))
                 return await cachedHandler.Convert<IList<T>>().Task;
             
-            var handler = Addressables.LoadAssetsAsync<T>(new List<string>(labels), null, Addressables.MergeMode.Intersection);
-            handler.Completed += op => {
+            var handle = Addressables.LoadAssetsAsync<T>(new List<string>(labels), null, Addressables.MergeMode.Intersection);
+            handle.Completed += op => {
                 foreach (var obj in op.Result)
                     Debug.Log($"[Assets] Loaded asset: {obj}");
             };
-            _labelHandlers.Add(key, handler);
-            return await handler.Task;
+            _labelHandlers.Add(key, handle);
+            return await handle.Task;
         }
         
         public static AsyncOperationHandle<T> LoadHandle<T>(string label)

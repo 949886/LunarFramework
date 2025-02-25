@@ -1,8 +1,11 @@
 // Created by LunarEclipse on 2024-7-30 17:59.
 
 using System.Collections.Generic;
+using System.Linq;
+using System.Runtime.CompilerServices;
 using Cysharp.Threading.Tasks;
 using DG.Tweening;
+using Luna.Extensions;
 using UnityEngine;
 
 #if USE_ADDRESSABLES
@@ -15,11 +18,17 @@ namespace Luna
     {
         private static AudioSource audioSource;
         
+        
         public static float Volume
         {
             get => audioSource.volume;
             set => audioSource.volume = value;
         }
+        
+        public static int HistoryLimit { get; set; } = 10;
+        
+        public static AudioClip CurrentBgm => audioSource.clip;
+        
 
         [RuntimeInitializeOnLoadMethod]
         static void Initialize()
@@ -59,6 +68,11 @@ namespace Luna
         }
         
 #if USE_ADDRESSABLES
+        public static void Play(Asset<AudioClip> asset)
+        {
+            asset.Load().Then(Play);
+        }
+        
         public static void Play(AssetReferenceT<AudioClip> clipRef)
         {
             var previousClip = audioSource.clip;
@@ -131,6 +145,11 @@ namespace Luna
         public static void SetVolume(float volume, float fadeDuration = 0.5f)
         {
             DOTween.To(() => audioSource.volume, x => audioSource.volume = x, volume, fadeDuration);
+        }
+        
+        public static void SetPitch(float pitch, float fadeDuration = 0.5f)
+        {
+            DOTween.To(() => audioSource.pitch, x => audioSource.pitch = x, pitch, fadeDuration);
         }
     }
 }

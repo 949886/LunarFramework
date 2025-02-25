@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using DG.Tweening;
+using Luna.Extensions;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
@@ -35,10 +36,22 @@ namespace Luna
             Object.DontDestroyOnLoad(soundManagerObject);
         }
         
-        public static void Play(AudioClip clip, float volumeScale = 1.0f)
+        public static void Play(AudioClip clip)
+        {
+            Play(clip, 1.0f);
+        }
+        
+        public static void Play(AudioClip clip, float volumeScale)
         {
             sfxAudioSource.PlayOneShot(clip, volumeScale);
         }
+
+#if USE_ADDRESSABLES
+        public static void Play(Asset<AudioClip> asset)
+        {
+            asset.Load().Then(audioClip => SFXManager.Play(audioClip));
+        }
+#endif
         
         /// Create a new audio source and play the clip repeatedly until `Stop` is called.
         public static void PlayRepeatedly(AudioClip clip)
