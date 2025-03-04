@@ -2,6 +2,7 @@
 
 using Cysharp.Threading.Tasks;
 using UnityEngine;
+using UnityEngine.UI;
 
 #if USE_ADDRESSABLES
 using System.Threading.Tasks;
@@ -11,20 +12,32 @@ using UnityEngine.AddressableAssets;
 namespace Luna.UI
 {
     [DisallowMultipleComponent]
-    [RequireComponent(typeof(RectTransform), typeof(CanvasRenderer), typeof(CanvasGroup))]
+    [RequireComponent(typeof(RectTransform))]
+    [RequireComponent(typeof(Canvas))]
+    [RequireComponent(typeof(CanvasRenderer))]
+    [RequireComponent(typeof(CanvasGroup))]
+    [RequireComponent(typeof(GraphicRaycaster))]
     public partial class Widget : MonoBehaviour
     {
         protected bool isDirty = false;
         public RectTransform RectTransform => transform as RectTransform;
+        public Canvas Canvas => GetComponent<Canvas>();
         public CanvasRenderer CanvasRenderer => GetComponent<CanvasRenderer>();
         public CanvasGroup CanvasGroup => GetComponent<CanvasGroup>();
         
+        private bool _isActive = true;
         public bool Active
         {
-            get => gameObject.activeInHierarchy;
-            set => gameObject.SetActive(value);
+            get => _isActive;
+            set
+            {
+                _isActive = value;
+                CanvasGroup.alpha = value ? 1 : 0;
+                CanvasGroup.interactable = value;
+                enabled = value;
+            }
         }
-        
+
         public float Alpha
         {
             get => CanvasGroup.alpha;
@@ -68,7 +81,27 @@ namespace Luna.UI
                 return widget;
             }
         }
-        
+#else
+        public static T New<T>(bool active = true, Transform parent = null) where T : Widget
+        {
+            // Find the widget in the database.
+            if (Widget.Dictionary.TryGetValue(typeof(T), out GameObject widgetPrefab))
+            {
+                if (!active) widgetPrefab.SetActive(false);
+                var widget = Instantiate(widgetPrefab, parent).GetComponent<T>();
+                if (!active) widgetPrefab.SetActive(true);
+                return widget;
+            }
+            
+            // Create a new widget.
+            var newWidget = new GameObject(typeof(T).Name) { active = active } .AddComponent<T>();
+            newWidget.Active = active;
+            newWidget.transform.SetParent(parent, false);
+            return newWidget;
+        }
+#endif
+
+#if USE_ADDRESSABLES
         public static Task<T> NewAsync<T>(bool active = true, Transform parent = null) where T : Widget
         {
             var tcs = new TaskCompletionSource<T>();
@@ -93,23 +126,6 @@ namespace Luna.UI
                 }
             });
             return tcs.Task;
-        }
-#else
-        public static T New<T>(bool active = true, Transform parent = null) where T : Widget
-        {
-            // Find the widget in the database.
-            if (Widget.Dictionary.TryGetValue(typeof(T), out GameObject widgetPrefab))
-            {
-                if (!active) widgetPrefab.SetActive(false);
-                var widget = Instantiate(widgetPrefab, parent).GetComponent<T>();
-                if (!active) widgetPrefab.SetActive(true);
-                return widget;
-            }
-            
-            // Create a new widget.
-            var newWidget = new GameObject(typeof(T).Name) { active = active } .AddComponent<T>();
-            newWidget.transform.SetParent(parent, false);
-            return newWidget;
         }
 #endif
         

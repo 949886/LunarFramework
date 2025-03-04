@@ -4,6 +4,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Luna.UI.Navigation;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
@@ -27,6 +28,8 @@ namespace Luna.UI.Navigation
         public bool focusAutomatically = true; 
         // Pop the top widget when the escape key is pressed
         public bool escToPop = false; 
+        
+        public static DeactivateMode deactivateMode = DeactivateMode.GameObject;
         
         
         private readonly Stack<Widget> _widgetStack = new();
@@ -143,7 +146,11 @@ namespace Luna.UI.Navigation
                 
         }
         
-
+        public static Task<dynamic> Push(Widget widget, Action callback = null)
+        {
+            return Instance._Push(widget, callback);
+        }
+        
         public static Task<dynamic> Push(GameObject widgetPrefab, Action<GameObject> callback = null)
         {
             return Instance._Push(widgetPrefab, callback);
@@ -254,23 +261,47 @@ namespace Luna.UI.Navigation
         {
             return Instance.PreviousRoute?.To as T;
         }
+
+        protected Task<dynamic> _Push(Widget widget, Action callback = null)
+        {
+            if (_widgetStack.Count > 0)
+                _widgetStack.Peek().SetNaviActive(false);
+            
+            _widgetStack.Push(widget);
+            
+            var route = new Route(widget);
+            route.To ??= widget;
+            route.LastSelected = EventSystem.current.currentSelectedGameObject;
+            route.OnPush();
+            _routeStack.Push(route);
+            
+            widget.Active = true;
+            widget.transform.SetParent(canvas.transform, false);
+            
+            // Executing the callback.
+            callback?.Invoke();
+            
+            return route.Popped;
+        }
         
         protected Task<dynamic> _Push(GameObject widgetPrefab, Action<GameObject> callback = null)
         {
             if (_widgetStack.Count > 0)
-                _widgetStack.Peek().gameObject.SetActive(false);
+                _widgetStack.Peek().SetNaviActive(false);
             
             // Instantiating the widget.
             // Widget will execute Awake method.
             var go = Instantiate(widgetPrefab, canvas.transform);
-            var widget = go.AddComponent<Widget>();
+            var widget = go.GetComponent<Widget>() ?? go.AddComponent<Widget>();
             // var widget = widgetPrefab.activeInHierarchy ?
             //     (widgetPrefab.GetComponent<Widget>() ?? widgetPrefab.AddComponent<Widget>()) : 
             //     Instantiate(widgetPrefab, canvas.transform).GetComponent<Widget>();
             _widgetStack.Push(widget);
             
             var route = new Route(widget);
+            route.To ??= widget;
             route.LastSelected = EventSystem.current.currentSelectedGameObject;
+            route.OnPush();
             _routeStack.Push(route);
             
             // Executing the callback.
@@ -290,7 +321,7 @@ namespace Luna.UI.Navigation
         protected async Task<dynamic> _Push<T>(Route<T> route = default, bool hidePrevious = true) where T : Widget
         {
             if (_widgetStack.Count > 0 && hidePrevious)
-                _widgetStack.Peek().gameObject.SetActive(false);
+                _widgetStack.Peek().SetNaviActive(false);
 
             // if (route.To == null)
             // {
@@ -346,7 +377,7 @@ namespace Luna.UI.Navigation
         protected Task<dynamic> _Push<T>(Route<T> route = default, bool hidePrevious = true) where T : Widget
         {
             if (_widgetStack.Count > 0 && hidePrevious)
-                _widgetStack.Peek().gameObject.SetActive(false);
+                _widgetStack.Peek().SetNaviActive(false);
             
             // Creating a new navigation route if not provided.
             // Instantiating the widget in typed route.
@@ -410,7 +441,7 @@ namespace Luna.UI.Navigation
                 
                 // Show the previous widget
                 if (_widgetStack.Count > 0)
-                    _widgetStack.Peek().gameObject.SetActive(true);
+                    _widgetStack.Peek().SetNaviActive(true);
                 
                 onPopped?.Invoke(route);
             }
@@ -432,7 +463,7 @@ namespace Luna.UI.Navigation
                 
                 if (_widgetStack.Count == 1)
                 {
-                    TopWidget.gameObject.SetActive(true);
+                    TopWidget.SetNaviActive(true);
                     
                     // Focus on the last selected object
                     if (focusAutomatically && route?.LastSelected != null)
@@ -457,7 +488,7 @@ namespace Luna.UI.Navigation
                 
                 if (TopWidget is T)
                 {
-                    TopWidget.gameObject.SetActive(true);
+                    TopWidget.SetNaviActive(true);
                     
                     // Pass the result to the target widget
                     route?.popCompleter.SetResult(result);
@@ -473,6 +504,34 @@ namespace Luna.UI.Navigation
                 else route?.popCompleter.SetResult(default);
             }
         }
+        
+        public enum DeactivateMode
+        {
+            GameObject,     // Use `SetActive(false)` to deactivate the widget
+            CanvasGroup,    // Use `alpha` & `interactable` of CanvasGroup to deactivate the widget
+            Canvas 
+        }
     }
+}
 
+namespace Luna.UI
+{
+    public partial class Widget
+    {
+        internal void SetNaviActive(bool active)
+        {
+            switch (Navigator.deactivateMode)
+            {
+                case Navigator.DeactivateMode.GameObject:
+                    this.gameObject.SetActive(active);
+                    break;
+                case Navigator.DeactivateMode.CanvasGroup:
+                    this.Active = active;
+                    break;
+                case Navigator.DeactivateMode.Canvas:
+                    this.Canvas.enabled = active;
+                    break;
+            }
+        }
+    }
 }
