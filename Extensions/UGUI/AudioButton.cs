@@ -69,7 +69,7 @@ namespace Luna.Extensions
             
             _state = state;
             
-            Debug.Log($"DoStateTransition: {state} : {gameObject.activeInHierarchy}");
+            // Debug.Log($"DoStateTransition: {state} : {gameObject.activeInHierarchy}");
 
             switch (state)
             {
