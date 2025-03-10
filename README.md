@@ -12,6 +12,7 @@ Lunar Framework is a set of tools and patterns for Unity3D development. It's des
 - [Installation](#installation)
 - [UI](#UI)
   - [UI Navigation](#navigation)
+- [Asset Management](#asset-management)
 - [Event](#event)
 - [Tools](#tools)
   - [Object Pool](#object-pool)
@@ -160,6 +161,38 @@ public async void OnEditButtonClick()
 }
 ```
 
+#### Pop to specific widget
+
+You can pop to a specific widget by calling the `Navigator.PopUntil` method. The top widget will be removed from the navigation stack until the target widget is found.
+
+```cs
+public void OnBackToHomeButtonClicked()  
+{  
+    Navigator.PopUntil<RouletteHomeView>();  
+}
+```
+
+#### Pop to root widget
+
+You can pop to the root widget by calling the `Navigator.PopToRoot` method. All widgets except the root widget will be removed from the navigation stack.
+
+```cs
+public void OnBackToHomeButtonClicked()  
+{  
+    Navigator.PopToRoot();  
+}
+```
+
+#### Replace top widget
+
+You can replace the top widget by calling the `Navigator.PushReplacement` method. The top widget will be removed from the navigation stack and destroyed, and the new widget will be pushed to the top of the navigation stack.
+
+```cs
+public void OnShowAgainButtonClicked()  
+{  
+    Navigator.PushReplacement<RouletteGameView>();
+}
+```
 
 #### Compatibility
 
@@ -180,6 +213,75 @@ void Start()
 You can show a modal dialog by calling the `Navigator.ShowModal` method.
 
 -->
+
+
+## Asset Management
+
+### R.cs
+
+Lunar framework provides a simple way to manage assets in Unity:  
+
+1. It will automatically generate a script `R.cs` that contains the asset references when the editor starts or recompiles.  
+2. You can also regenerate this file manually by selecting the menu item `Tools > LunarFramework > Generate R.cs`.
+
+If you have some audio files like this file tree:
+```
+Assets
+  └ Audios
+      ├ bgm_lobby.mp3
+      └ sf_click.mp3
+```
+
+The generated `R.cs` will look like this:
+
+```csharp
+namespace R
+{
+    public static class Audios
+    {
+        public static Asset<AudioClip> BgmLobby = new("Audios/bgm_lobby");
+        public static Asset<AudioClip> SfxClick = new("Audios/sf_click");
+    }
+}
+```
+
+Then you can load and get the asset easily, for example:
+
+```csharp
+private void PlaySfxSync() => SFXManager.Play(R.Audios.SfxClick);
+
+private void PlaySfxAsync1() => R.Audios.SfxClick.Load().Then(SFXManager.Play);
+private async void PlaySfxAsync2()
+{
+    var clip = await R.Audios.SfxClick.Load();
+    SFXManager.Play(clip);
+}
+```
+
+Here is an example of preloading assets with a loading indicator:
+
+```csharp
+public class PreloadingExample : MonoBehaviour
+{
+    public GameObject prefab;
+    
+    private async void Start()
+    {
+        // Show loading indicator before necessary assets are loaded
+        await UniTask.Yield(PlayerLoopTiming.PreLateUpdate);
+        Navigator.ShowModal<CircularLoadingIndicator>();
+        
+        // Load bgm
+        var clip = await R.Audios.BgmLobby.Load();
+        BgmManager.Play(clip);
+        
+        // Load audios with both "Audio" and "Games.Common" labels if you enabled addressables package
+        await Assets.Load("Games.Common", "Audio");
+
+        Navigator.PopToRoot();
+    }
+}
+```
 
 
 ## Event
