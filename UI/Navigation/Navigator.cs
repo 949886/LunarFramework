@@ -411,11 +411,15 @@ namespace Luna.UI.Navigation
         {
             if (_widgetStack.Count > 0)
             {
-                Destroy(_widgetStack.Pop());
-                _routeStack.Pop();
+                var topWidget = _widgetStack.Pop();
+                Destroy(topWidget.gameObject);
             }
+
+            var task = _Push<T>(callback);
+            var newRoute = _routeStack.Pop();
+            _routeStack.Peek().To = newRoute.To;
             
-            return _Push<T>(callback);
+            return task;
         }
 
         protected void _Pop<T>(T result = default)
