@@ -127,16 +127,8 @@ namespace Luna.UI
             
             isDirty = false;
             _initialized = true;
-            
-            // Keep selection
-            if (keepSelectionOnReload && cells.Count > 0)
-            {
-                if (SelectedIndex < cells.Count)
-                    cells[SelectedIndex].Select();
-                else cells.Last().Select();
-                
-                SelectedIndex = Mathf.Clamp(SelectedIndex, 0, cells.Count - 1);
-            }
+
+            KeepSelection();
         }
         
         public async Task ReloadAsync()
@@ -154,6 +146,7 @@ namespace Luna.UI
                 var newCell = Instantiate(cell, content);
                 cells.Add(newCell);
                 newCell.gameObject.SetActive(true);
+                newCell.name = $"Cell {i}";
                 newCell.Index = i;
                 newCell.Data = Data[i];
                 newCell.OnCellSelected += _OnCellSelected;
@@ -171,6 +164,20 @@ namespace Luna.UI
                 
                 if (selectFirstCellOnReload && i == 0)
                     EventSystem.current.SetSelectedGameObject(newCell.gameObject);
+            }
+        }
+        
+        public async void KeepSelection()
+        {
+            await UniTask.Yield(PlayerLoopTiming.LastPostLateUpdate);
+            
+            // Keep selection
+            if (keepSelectionOnReload && cells.Count > 0)
+            {
+                if (SelectedIndex < cells.Count)
+                    Select(SelectedIndex);
+                
+                SelectedIndex = Mathf.Clamp(SelectedIndex, 0, cells.Count - 1);
             }
         }
 
@@ -215,11 +222,10 @@ namespace Luna.UI
         
         public void Select(int index)
         {
-            if (index < cells.Count)
-            {
-                cells[index].Select();
-                SelectedIndex = index;
-            }
+            if (index >= cells.Count) 
+                index = cells.Count - 1;
+            
+            FocusOnCell(index, 0);
         }
         
         public void Remove(int index, bool autoFocus = true)
@@ -231,10 +237,11 @@ namespace Luna.UI
 
                 if (cells.Count == 0) return;
                 var focusIndex = index < cells.Count ? index : cells.Count - 1;
+                SelectedIndex = focusIndex;
                 
                 if (autoFocus)
                     UniTask.NextFrame().ContinueWith(() => {
-                        FocusOnCell(focusIndex, true);
+                        FocusOnCell(focusIndex, false);
                     });
             }
         }
@@ -250,16 +257,21 @@ namespace Luna.UI
             Reload();
         }
         
-        public void FocusOnCell(int index, bool autoSnap = false)
+        public void FocusOnCell(int index, bool autoSnap = false, float duration = 0.5f)
         {
             if (cells.Count == 0) return;
             
-            var cell = cells[index.Mod(cells.Count)];
-            cell.OnSelect(null);
-            EventSystem.current.SetSelectedGameObject(cell.gameObject);
+            SelectedIndex = index;
             
-            if (autoSnap)
-                SnapTo(cell.transform as RectTransform);
+            var currentSelected = EventSystem.current.currentSelectedGameObject;
+            var cell = cells[index.Mod(cells.Count)];
+            if (autoSnap) SnapTo(cell.transform as RectTransform, duration);
+            if (!isDirty) EventSystem.current.SetSelectedGameObject(cell.gameObject);
+        }
+        
+        public void FocusOnCell(int index, float duration)
+        {
+            FocusOnCell(index, true, duration);
         }
 
         public void FocusOnCell(T cell, bool autoSnap = false)

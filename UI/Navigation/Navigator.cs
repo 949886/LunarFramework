@@ -172,6 +172,11 @@ namespace Luna.UI.Navigation
             return Instance._Push<T>(callback);
         }
         
+        public static Task<dynamic> Push<T>(bool keepSelectionOnPop, Action<T> callback = null) where T : Widget
+        {
+            return Instance._Push<T>(callback, keepSelectionOnPop);
+        }
+        
         /// Push a widget to replace the top widget in the stack. <br/>
         public static Task<dynamic> PushReplacement<T>(Action<T> callback = null) where T : Widget
         {
@@ -249,7 +254,7 @@ namespace Luna.UI.Navigation
         public static Task<dynamic> ShowModal<T>(Action<T> builder = null, bool maskDismissible = true, Color? maskColor = null, Vector2 offset = default) where T : Widget
         {
             var modalRoute = new ModalRoute<T>(builder, maskDismissible, maskColor, offset);
-            return Instance._Push<T>(modalRoute, false);
+            return Instance._Push<T>(modalRoute, hidePrevious: false);
         }
         
         public static Widget GetPrevious()
@@ -318,7 +323,7 @@ namespace Luna.UI.Navigation
         
         
 #if USE_ADDRESSABLES && !DISABLE_ADDRESSABLE_NAVIGATION
-        protected async Task<dynamic> _Push<T>(Route<T> route = default, bool hidePrevious = true) where T : Widget
+        protected async Task<dynamic> _Push<T>(Route<T> route = default, bool keepSelectionOnPop = true, bool hidePrevious = true) where T : Widget
         {
             if (_widgetStack.Count > 0 && hidePrevious)
                 _widgetStack.Peek().SetNaviActive(false);
@@ -345,7 +350,7 @@ namespace Luna.UI.Navigation
             
             // Creating a new navigation route.
             route.To ??= await Widget.NewAsync<T>();
-            route.LastSelected = EventSystem.current.currentSelectedGameObject;
+            route.LastSelected = keepSelectionOnPop ? EventSystem.current.currentSelectedGameObject : null;
             route.OnPush();
             _routeStack.Push(route);
             
@@ -374,7 +379,7 @@ namespace Luna.UI.Navigation
             return result;
         }
 #else // USE SCRIPTABLE OBJECT
-        protected Task<dynamic> _Push<T>(Route<T> route = default, bool hidePrevious = true) where T : Widget
+        protected Task<dynamic> _Push<T>(Route<T> route = default, bool keepSelectionOnPop = true, bool hidePrevious = true) where T : Widget
         {
             if (_widgetStack.Count > 0 && hidePrevious)
                 _widgetStack.Peek().SetNaviActive(false);
@@ -382,7 +387,7 @@ namespace Luna.UI.Navigation
             // Creating a new navigation route if not provided.
             // Instantiating the widget in typed route.
             route.To ??= Widget.New<T>();
-            route.LastSelected = EventSystem.current.currentSelectedGameObject;
+            route.LastSelected = keepSelectionOnPop ? EventSystem.current.currentSelectedGameObject : null;
             route.OnPush();
             _routeStack.Push(route);
 

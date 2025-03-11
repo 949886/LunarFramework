@@ -11,7 +11,7 @@ namespace Luna.UI.Navigation
         public Widget To;
         public Widget From;
         
-        public GameObject LastSelected { get; internal set; }
+        public GameObject LastSelected { get; set; }
         
         /// A task which completes when the widget is popped.
         /// It takes a dynamic value that passes from the popped widget to the previous widget.
