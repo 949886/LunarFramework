@@ -64,7 +64,7 @@ namespace Luna.UI
             float y;
             
             if (SelectedIndex > PreviousIndex) // Scroll down
-            {   
+            {
                 y = -target.offsetMin.y - ScrollSize.height;
                 if (y < ScrollOffset.y) return;
             }

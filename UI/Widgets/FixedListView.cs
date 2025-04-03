@@ -25,7 +25,7 @@ namespace Luna.UI
             set
             {
                 data = value;
-
+                
                 if (!isDirty)
                 {
                     if (_initialized) ReloadAsync();
@@ -124,6 +124,7 @@ namespace Luna.UI
             
             // Create new cells
             CreateCells();
+            LayoutRebuilder.ForceRebuildLayoutImmediate(RectTransform);
             
             isDirty = false;
             _initialized = true;
@@ -169,7 +170,7 @@ namespace Luna.UI
         
         public async void KeepSelection()
         {
-            await UniTask.Yield(PlayerLoopTiming.LastPostLateUpdate);
+            await UniTask.DelayFrame(1);
             
             // Keep selection
             if (keepSelectionOnReload && cells.Count > 0)
