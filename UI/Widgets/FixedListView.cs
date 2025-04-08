@@ -10,6 +10,7 @@ using Luna.Extensions;
 using Luna.Extensions.Unity;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.Serialization;
 using UnityEngine.UI;
 
 namespace Luna.UI
@@ -40,8 +41,7 @@ namespace Luna.UI
         
 
         public bool selectFirstCellOnEnable = false;
-        public bool selectFirstCellOnReload = true;
-        public bool keepSelectionOnReload = true;
+        [FormerlySerializedAs("keepSelectionOnReload")] public bool keepSelection = true;
         public bool snapToCellWhenSelected = true;
         
         public delegate void CellCallback(int index, T listViewCell);
@@ -54,6 +54,7 @@ namespace Luna.UI
         public event CellCallback onCellDeselected;
         public event CellCallback onCellSubmitted;
         public event CellCallback onCellClicked;
+        public event Action onReloaded;
         
         #endregion
         
@@ -104,8 +105,6 @@ namespace Luna.UI
         protected virtual void Start()
         {
             Reload();
-            isDirty = false;
-            _initialized = true;
         }
 
         public void Reload()
@@ -118,6 +117,7 @@ namespace Luna.UI
                 cell.OnCellSelected -= _OnCellSelected;
                 cell.OnCellDeselected -= _OnCellDeselected;
                 cell.OnCellSubmitted -= _OnCellSubmitted;
+                cell.transform.SetParent(null);
                 Destroy(cell.gameObject);
             }
             cells.Clear();
@@ -130,6 +130,8 @@ namespace Luna.UI
             _initialized = true;
 
             KeepSelection();
+
+            onReloaded?.Invoke();
         }
         
         public async Task ReloadAsync()
@@ -155,30 +157,25 @@ namespace Luna.UI
                 newCell.OnCellSubmitted += _OnCellSubmitted;
                 newCell.OnCellClicked += _OnCellClicked;
                 if (snapToCellWhenSelected)
-                {
-                    newCell.OnCellSelected += (index, listViewCell) =>
-                    {
+                    newCell.OnCellSelected += (index, listViewCell) => {
                         SnapTo(listViewCell.transform as RectTransform);
                     };
-                }
                 onCellCreated?.Invoke(i, newCell);
-                
-                if (selectFirstCellOnReload && i == 0)
-                    EventSystem.current.SetSelectedGameObject(newCell.gameObject);
             }
         }
         
         public async void KeepSelection()
         {
-            await UniTask.DelayFrame(1);
-            
             // Keep selection
-            if (keepSelectionOnReload && cells.Count > 0)
+            if (keepSelection && cells.Count > 0)
             {
+                SelectedIndex = Mathf.Clamp(SelectedIndex, 0, cells.Count - 1);
+                
+                var currentSelected = EventSystem.current.currentSelectedGameObject;
+                if (currentSelected == cells[SelectedIndex].gameObject) return;
+                
                 if (SelectedIndex < cells.Count)
                     Select(SelectedIndex);
-                
-                SelectedIndex = Mathf.Clamp(SelectedIndex, 0, cells.Count - 1);
             }
         }
 
@@ -242,7 +239,7 @@ namespace Luna.UI
                 
                 if (autoFocus)
                     UniTask.NextFrame().ContinueWith(() => {
-                        FocusOnCell(focusIndex, false);
+                        FocusOnCell(focusIndex);
                     });
             }
         }
@@ -258,27 +255,22 @@ namespace Luna.UI
             Reload();
         }
         
-        public void FocusOnCell(int index, bool autoSnap = false, float duration = 0.5f)
+        public void FocusOnCell(int index, float duration = 0.5f)
         {
             if (cells.Count == 0) return;
             
             SelectedIndex = index;
             
-            var currentSelected = EventSystem.current.currentSelectedGameObject;
             var cell = cells[index.Mod(cells.Count)];
-            if (autoSnap) SnapTo(cell.transform as RectTransform, duration);
+            if (cell == null) return;
+            
             if (!isDirty) EventSystem.current.SetSelectedGameObject(cell.gameObject);
         }
         
-        public void FocusOnCell(int index, float duration)
-        {
-            FocusOnCell(index, true, duration);
-        }
-
-        public void FocusOnCell(T cell, bool autoSnap = false)
+        public void FocusOnCell(T cell)
         {
             var index = cells.IndexOf(cell);
-            FocusOnCell(index, autoSnap);
+            FocusOnCell(index);
         }
     }
     

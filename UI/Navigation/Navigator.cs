@@ -204,7 +204,14 @@ namespace Luna.UI.Navigation
         /// Returns the root widget.
         public static void PopToRoot()
         {
-            Instance._PopToRoot();
+            Instance._PopToRoot(0);
+        }
+        
+        /// Pop all widgets until the root widget. <br/>
+        /// Returns the root widget.
+        public static void PopToRoot<T>(T result = default)
+        {
+            Instance._PopToRoot(result);
         }
         
         /// Pop widgets until the top widget is of type T. <br/>
@@ -456,7 +463,7 @@ namespace Luna.UI.Navigation
             }
         }
 
-        protected void _PopToRoot()
+        protected void _PopToRoot<T>(T result = default)
         {
             while (_widgetStack.Count > 1)
             {
@@ -467,7 +474,7 @@ namespace Luna.UI.Navigation
                 if (route != null)
                 {
                     route.OnPop();
-                    route.popCompleter.SetResult(default);   
+                    route.popCompleter.SetResult(result);   
                 }
                 
                 if (_widgetStack.Count == 1)
@@ -492,15 +499,16 @@ namespace Luna.UI.Navigation
                 var widget = _widgetStack.Pop();
                 var route = _routeStack.Pop();
                 Destroy(widget.gameObject);
-                
-                route?.OnPop();
+
+                if (route != null)
+                {
+                    route.OnPop();
+                    route.popCompleter.SetResult(result);   
+                }
                 
                 if (TopWidget is T)
                 {
                     TopWidget.SetNaviActive(true);
-                    
-                    // Pass the result to the target widget
-                    route?.popCompleter.SetResult(result);
                     
                     // Focus on the last selected object
                     if (focusAutomatically && route?.LastSelected != null)
@@ -510,7 +518,7 @@ namespace Luna.UI.Navigation
                     
                     break;
                 }
-                else route?.popCompleter.SetResult(default);
+                // else route?.popCompleter.SetResult(default);
             }
         }
         
