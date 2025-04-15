@@ -39,9 +39,9 @@ namespace Luna.UI
         /// The cell prefab to be instantiated for each item in the list view.
         public T cell;
         
-
-        public bool selectFirstCellOnEnable = false;
+        
         [FormerlySerializedAs("keepSelectionOnReload")] public bool keepSelection = true;
+        [FormerlySerializedAs("selectFirstCellOnEnable")] public bool alwaysSelectFirstCell = false;
         public bool snapToCellWhenSelected = true;
         
         public delegate void CellCallback(int index, T listViewCell);
@@ -88,20 +88,6 @@ namespace Luna.UI
             onCellCreated += OnCellCreated;
         }
 
-        protected void OnEnable()
-        {
-            if (selectFirstCellOnEnable && cells.Count > 0)
-            {
-                // Select first cell
-                var firstCell = cells.First().gameObject;
-                if (firstCell != null)
-                {
-                    // await UniTask.NextFrame();
-                    EventSystem.current.SetSelectedGameObject(firstCell);
-                }
-            }
-        }
-
         protected virtual void Start()
         {
             Reload();
@@ -129,6 +115,8 @@ namespace Luna.UI
             isDirty = false;
             _initialized = true;
 
+            if (alwaysSelectFirstCell)
+                SelectedIndex = 0;
             KeepSelection();
 
             onReloaded?.Invoke();
