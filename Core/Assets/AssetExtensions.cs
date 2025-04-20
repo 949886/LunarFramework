@@ -3,6 +3,7 @@ using UnityEngine;
 
 namespace Luna
 {
+#if USE_ADDRESSABLES
     public static class AssetExtensions
     {
         public static void Play(this Asset<AudioClip> asset)
@@ -15,4 +16,5 @@ namespace Luna
             asset.Load().Then(BgmManager.Play);
         }
     }
+#endif
 }
