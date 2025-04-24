@@ -1,38 +1,40 @@
 // Created by LunarEclipse on 2024-10-01 14:10.
 
 using System;
-using System.Threading;
 using System.Threading.Tasks;
 using Cysharp.Threading.Tasks;
-using Luna.Extensions;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 #if USE_ADDRESSABLES
 using UnityEngine.AddressableAssets;
 using UnityEngine.ResourceManagement.AsyncOperations;
+using UnityEngine.ResourceManagement.ResourceProviders;
 
 namespace Luna
 {
-    public class Asset<T> : IAsyncDisposable where T : UnityEngine.Object
+    public class Asset<T> : IAsyncDisposable
     {
-        public readonly string address;
+        public event Action<T> onLoaded;                // Triggered when the asset is loaded.
+        public event Action<float> onProgress;          // A callback that receives the loading progress (0-1).
+        public event Action<DownloadStatus> onDownload; // A callback that receives the download progress (0-1) for remote assets. If the asset is local, this event will be triggered once with parameter progress 1.
         
-        private AsyncOperationHandle<T> handle;
+        protected string address;
+        protected AsyncOperationHandle<T> handle;
+        
+        public string Address => address;
         
         public Asset(string address)
         {
             this.address = address;
-            // handle = Addressables.LoadAssetAsync<T>(address);
-            // handle = Assets.LoadHandle<T>(address);
         }
         
         public async ValueTask DisposeAsync()
         {
             await handle.Task;
-            // Addressables.Release(handler);
             Assets.Unload(address);
             
-            Debug.Log($"Disposing {handle.Result.name}");
+            Debug.Log($"Disposing {handle.Result}");
         }
         
         // Load asset asynchronously
@@ -40,31 +42,22 @@ namespace Luna
         public async Task<T> Load()
         {
             await UniTask.Yield(PlayerLoopTiming.PostLateUpdate);
-            handle = Assets.LoadHandle<T>(address);
+
+            if (typeof(T) == typeof(SceneInstance))
+                handle = ((AsyncOperationHandle)Addressables.LoadSceneAsync(address)).Convert<T>();
+            else handle = Assets.LoadHandle<T>(address);
+
+            TrackProgress();
+            
             return await handle.Task;
         }
-        
-        // Load asset asynchronously with progress callback.
-        //  - progress: A callback that receives the loading progress (0-1).
-        //
-        // Example: var prefab = await new Asset<GameObject>("path/to/prefab").Load(progress => Debug.Log(progress));
-        public async Task<T> Load(Action<float> progress)
+
+        public async void Load(LoadSceneMode loadSceneMode)
         {
+            Debug.Assert(typeof(T) == typeof(SceneInstance), "Load with LoadSceneMode is only available for SceneInstance.");
             await UniTask.Yield(PlayerLoopTiming.PostLateUpdate);
-            handle = Assets.LoadHandle<T>(address);
-            
-            UniTask.Void(async () =>
-            {
-                while (!handle.IsDone)
-                {
-                    progress.Invoke(handle.PercentComplete);
-                    Debug.Log($"[Assets] Loading {address}: {handle.PercentComplete * 100}%");
-                    await UniTask.Yield();
-                }
-                Debug.Log($"[Assets] Loading {address}: 100%");
-            });
-            
-            return await handle.Task;
+            handle = ((AsyncOperationHandle)Addressables.LoadSceneAsync(address, loadSceneMode)).Convert<T>();
+            TrackProgress();
         }
         
         // Unload asset asynchronously
@@ -73,18 +66,35 @@ namespace Luna
             await handle.Task;
             Assets.Unload(address);
         }
+        
+        private async void TrackProgress()
+        {
+            // AsyncOperationHandle<long> getDownloadSize = Addressables.GetDownloadSizeAsync(address);
+            
+            while (!handle.GetDownloadStatus().IsDone)
+            {
+                onDownload?.Invoke(handle.GetDownloadStatus());
+                await UniTask.Yield();
+            }
+            onDownload?.Invoke(handle.GetDownloadStatus());
+                
+            while (!handle.IsDone)
+            {
+                onProgress?.Invoke(handle.PercentComplete);
+                await UniTask.Yield();
+            }
+
+            onProgress?.Invoke(1);
+        }
 
         // Load asset synchronously
         // Note: This will **block the main thread** until the asset is loaded.
         // Example: var prefab = !new Asset<GameObject>("path/to/prefab");
         public static T operator !(Asset<T> asset)
         {
-            var stopWatch = System.Diagnostics.Stopwatch.StartNew();
-            asset.handle = Assets.LoadHandle<T>(asset.address);
+            asset.Load();
             if (!asset.handle.IsDone)
                 asset.handle.WaitForCompletion();
-            stopWatch.Stop();
-            Debug.Log($"[Asset] Loaded asset: {asset.handle.Result.name} in {stopWatch.ElapsedMilliseconds}ms.");
             return asset.handle.Result;
         }
         
