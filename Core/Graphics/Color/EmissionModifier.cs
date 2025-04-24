@@ -23,8 +23,6 @@ public class EmissionModifier : MonoBehaviour
 
     private void Start()
     {
-        Debug.Log("Start");
-
         meshRenderer = GetComponent<MeshRenderer>();
         color = meshRenderer.material.GetColor(PropertyName);
    }

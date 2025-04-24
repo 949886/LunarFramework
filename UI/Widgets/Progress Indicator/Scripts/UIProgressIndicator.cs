@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 
-public class UIProgressIndicator : UIWorldSpace
+public class UIProgressIndicator : MonoBehaviour
 {
 	[SerializeField]
 	private Image progressFillImage;

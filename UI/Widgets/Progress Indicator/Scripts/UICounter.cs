@@ -1,3 +1,5 @@
+using System;
+using System.Globalization;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -6,7 +8,7 @@ public sealed class UICounter : UIProgressIndicator
 {
 	[Header("Bank Counter")]
 	[SerializeField]
-	private TMP_Text countText;
+	private TextMeshProUGUI countText;
 
 	[SerializeField]
 	private Color maxLimitTextColor = Color.red;
@@ -15,16 +17,17 @@ public sealed class UICounter : UIProgressIndicator
 
 	private Color originalCountColor;
 
-	protected override void Awake()
+	protected void Awake()
 	{
-		base.Awake();
 		originalCountColor = countText.color;
 	}
 
-	public void UpdateDisplay(int count, float progressPct, bool isMax = false)
+	public void UpdateDisplay(float progressPct, bool isMax = false)
 	{
+		if (progressPct > 1f) progressPct = 1f;
+		
 		countText.color = (isMax ? maxLimitTextColor : originalCountColor);
-		countText.text = count.ToString();
-		UpdateDisplay(progressPct, isMax);
+		countText.text = Mathf.Floor(progressPct * 100).ToString();
+		base.UpdateDisplay(progressPct, isMax);
 	}
 }

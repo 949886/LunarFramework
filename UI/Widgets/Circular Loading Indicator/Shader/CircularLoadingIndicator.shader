@@ -3,6 +3,7 @@ Shader "Luna/CircularLoadingIndicator"
     // Defines the properties that can be set in the Material inspector window.
     Properties
     {
+        _MainTex ("Texture", 2D) = "white" {}
         _BaseColor("Base Color",Color) = (1,1,1,1)
         _Radius("Radius", Float) = 0.25
         _Thickness("Thickness", Float) = 0.05
