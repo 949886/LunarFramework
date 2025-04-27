@@ -11,12 +11,16 @@ namespace Luna.Core.Locomotion.Character
 {
     public class ThirdPersonCharacterAttackBehaviour : AnimationStateBehaviour
     {
+        [Header("Attack")]
         [FormerlySerializedAs("AttackIndex")] public int attackIndex = 0; // 0 = Idle, 1-10 = Attack
         [FormerlySerializedAs("Weapon")] public GameObject weapon;
         public float windUpTime;
+        public int attactLayer = 0;
 
         public override void OnAnimationStart(Animator animator, AnimatorStateInfo stateInfo, int layerIndex)
         {
+            if (layerIndex != attactLayer) return;
+            
             Debug.Log("On Attack Enter: \n" + animator.GetCurrentStateName(0));
             
             if (stateInfo.IsTag("Attack"))
@@ -39,6 +43,8 @@ namespace Luna.Core.Locomotion.Character
 
         public override void OnAnimationExit(Animator animator, AnimatorStateInfo stateInfo, int layerIndex)
         {
+            if (layerIndex != attactLayer) return;
+            
             Debug.Log("On Attack Exit: \n" + animator.GetCurrentStateName(0));
             
             animator.SetInteger("Attack Index", 0);
@@ -107,7 +113,7 @@ namespace Luna.Core.Locomotion.Character
         public override void OnStateMachineEnter(Animator animator, int stateMachinePathHash)
         {
             Debug.Log("On Attack State Machine Enter");
-            weapon.SetActive(true);
+            weapon?.SetActive(true);
         }
         
         public override void OnStateMachineExit(Animator animator, int stateMachinePathHash)
@@ -115,7 +121,7 @@ namespace Luna.Core.Locomotion.Character
             Debug.Log("On Attack State Machine Exit");
             attackIndex = 0;
             animator.SetInteger("Attack Index", attackIndex);
-            weapon.SetActive(false);
+            weapon?.SetActive(false);
         }
     }
 }

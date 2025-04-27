@@ -35,7 +35,7 @@ namespace Luna.Core.Animation
                 _playableDirector.Stop();
             }
             
-            Debug.Log("Timeline Initial Time: " + initialTime);
+            Debug.Log("[TimelineStateBehaviour] Timeline Initial Time: " + initialTime);
             _playableDirector.time = initialTime;
                 
             if (playOnEnter)

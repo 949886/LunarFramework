@@ -14,6 +14,10 @@ using Random = UnityEngine.Random;
 
 namespace Luna.Core.Locomotion.Character
 {
+    [RequireComponent(typeof(Rigidbody))]
+    [RequireComponent(typeof(CapsuleCollider))]
+    [RequireComponent(typeof(Animator))]
+    [RequireComponent(typeof(PlayableDirector))]
     public class ThirdPersonCharacterController : MonoBehaviour, ThirdPersonInput.IGameplayActions
     {
         public float moveSpeed = 5f;
@@ -24,12 +28,15 @@ namespace Luna.Core.Locomotion.Character
         public GameObject weapon;
         public GameObject projectile;
 
+        protected Animator _animator;
+        protected ThirdPersonCharacterAttackBehaviour _attackBehaviour;
+        
         private ThirdPersonInput inputs;
         private bool isCharging;
         private int lastDirection;
         
-        private Animator animator;
-        private ThirdPersonCharacterAttackBehaviour attackBehaviour;
+        private Rigidbody _rigidbody;
+        private CapsuleCollider _capsuleCollider;
         
         private PlayableDirector _playableDirector;
         private TimelineAsset _timelineAsset;
@@ -37,21 +44,29 @@ namespace Luna.Core.Locomotion.Character
         
         private Vector3 _deltaPosition;
 
-        private void Awake()
+        
+        public bool IsIdle => _animator.GetCurrentAnimatorStateInfo(0).IsTag("Idle");
+
+        
+        protected virtual void Awake()
         {
             inputs = new ThirdPersonInput();
             inputs.Gameplay.AddCallbacks(this);
             
-            animator = GetComponent<Animator>(); 
-            attackBehaviour = animator.GetBehaviour<ThirdPersonCharacterAttackBehaviour>();
-            attackBehaviour.weapon = weapon;
+            _rigidbody = GetComponent<Rigidbody>();
+            _rigidbody.freezeRotation = true;
+            _capsuleCollider = GetComponent<CapsuleCollider>();
+            
+            _animator = GetComponent<Animator>(); 
+            _attackBehaviour = _animator.GetBehaviour<ThirdPersonCharacterAttackBehaviour>();
+            _attackBehaviour.weapon = weapon;
             
             _playableDirector = GetComponent<PlayableDirector>();
             _timelineAsset = _playableDirector.playableAsset as TimelineAsset;
             if (_timelineAsset) _markers = _timelineAsset.markerTrack.GetMarkers().ToArray();
         }
 
-        private void OnEnable()
+        protected virtual void OnEnable()
         {
             if (moveTarget == null)
             {
@@ -60,19 +75,19 @@ namespace Luna.Core.Locomotion.Character
             inputs.Enable();
         }
         
-        private void Start()
+        protected virtual void Start()
         {
 #if UNITY_2022_3_OR_NEWER
             Physics.simulationMode = SimulationMode.Script;
 #endif
         }
 
-        private void OnDisable()
+        protected virtual  void OnDisable()
         {
             inputs.Disable();
         }
 
-        private void Update()
+        protected virtual  void Update()
         {
             var move = inputs.Gameplay.Move.ReadValue<Vector2>();
             var look = inputs.Gameplay.Look.ReadValue<Vector2>();
@@ -92,14 +107,14 @@ namespace Luna.Core.Locomotion.Character
 
         private void UpdateState()
         {
-            var stateInfo = animator.GetCurrentAnimatorStateInfo(0);
+            var stateInfo = _animator.GetCurrentAnimatorStateInfo(0);
             if (stateInfo.IsTag("Attack"))
             {
                 
             }
             else
             {
-                attackBehaviour.attackIndex = 0;
+                // _attackBehaviour.attackIndex = 0;
                 // animator.SetInteger("Attack Index", 0);
             }
         }
@@ -118,7 +133,7 @@ namespace Luna.Core.Locomotion.Character
             // SetDirection(movement);
             
             Physics.Simulate(Time.deltaTime);
-            moveTarget.position += _deltaPosition; 
+            moveTarget.position += _deltaPosition;
             _deltaPosition = Vector3.zero;
         }
 
@@ -132,14 +147,14 @@ namespace Luna.Core.Locomotion.Character
             
             // Debug.Log($"onAnimatorMove {moveTarget}");
             // _deltaPosition = animator.deltaPosition;
-            moveTarget.position += animator.deltaPosition; 
+            moveTarget.position += _animator.deltaPosition; 
         }
         
         #region Behavious
 
         private void Move(Vector2 direction)
         {
-            animator.SetFloat("Speed", direction.magnitude * moveSpeed);
+            _animator.SetFloat("Speed", direction.magnitude * moveSpeed);
             if (direction.sqrMagnitude < 0.01)
                 return;
             var scaledMoveSpeed = moveSpeed * Time.deltaTime;
@@ -149,7 +164,7 @@ namespace Luna.Core.Locomotion.Character
 
         private void Rotate(Vector2 direction)
         {
-            if (attackBehaviour.attackIndex > 0)
+            if (_attackBehaviour.attackIndex > 0)
                 return;
             
             // World space rotation:
@@ -175,7 +190,7 @@ namespace Luna.Core.Locomotion.Character
             // Debug.Log("rotateAngle: " + rotateAngle);
             // var rotateRadians = rotateAngle * Mathf.Deg2Rad;
             
-            animator.SetFloat("MovingTurn", rotateRadians);
+            _animator.SetFloat("MovingTurn", rotateRadians);
             
             // transform.forward = Vector3.Slerp(transform.forward, rotateDirection, Time.deltaTime * 15f);
             // Or:
@@ -212,6 +227,16 @@ namespace Luna.Core.Locomotion.Character
                 Fire();
                 yield return new WaitForSeconds(0.1f);
             }
+        }
+
+        public void Attack()
+        {
+            _animator.SetBool("Attack", true);
+        }
+        
+        public void HeavyAttack()
+        {
+            _animator.SetBool("Extra Attack", true);
         }
 
         #endregion
@@ -256,7 +281,7 @@ namespace Luna.Core.Locomotion.Character
             if (context.started)
             {
                 Debug.Log(@"Sprinting..." + context);
-                animator.SetTrigger("Sprint");
+                _animator.SetTrigger("Sprint");
             }
         }
 
@@ -278,17 +303,17 @@ namespace Luna.Core.Locomotion.Character
             {
                 if (context.started)
                 {
-                    animator.SetBool("Extra Attack", true);
+                    HeavyAttack();
                 }
 
                 if (context.performed)
                 {
-                    animator.SetBool("Extra Attack", false); 
+                    
                 }
 
                 if (context.canceled)
                 {
-                    
+                    // _animator.SetBool("Extra Attack", false);
                 }
             }
             else
@@ -300,16 +325,16 @@ namespace Luna.Core.Locomotion.Character
 
                 if (context.performed)
                 {
-                    var state = animator.GetCurrentAnimatorStateInfo(0);
-                    var stateName = animator.GetCurrentStateName(0);
-                    Debug.Log("Attack Index: " + attackBehaviour.attackIndex);
-                    animator.SetBool("Attack", true);
+                    // var state = _animator.GetCurrentAnimatorStateInfo(0);
+                    // var stateName = _animator.GetCurrentStateName(0);
+                    Attack();
+                    
                     // _playableDirector.Play();
                     // _playableDirector.time = _markers[0].time;
                     // await UniTask.WaitForSeconds(0.1f); 
                     // await UniTask.NextFrame(); 
                     
-                    await UniTask.DelayFrame(5);
+                    // await UniTask.DelayFrame(5);
                     // animator.SetBool("Attack", false);
                     // Time.timeScale = 0.1f;
                     // await UniTask.WaitForSeconds(1f); 
@@ -325,7 +350,7 @@ namespace Luna.Core.Locomotion.Character
 
         public void OnExtraAttack(InputAction.CallbackContext context)
         {
-            Debug.Log("Extra Attack");
+            // Debug.Log("Extra Attack");
         }
 
         public void OnInteract(InputAction.CallbackContext context)
@@ -419,7 +444,7 @@ namespace Luna.Core.Locomotion.Character
         
         private void OnCollisionEnter(Collision other)
         {
-            Debug.Log("OnCollisionEnter");
+            // Debug.Log("OnCollisionEnter");
         }
         
         private void OnCollisionStay(Collision other)
@@ -429,7 +454,7 @@ namespace Luna.Core.Locomotion.Character
         
         private void OnCollisionExit(Collision other)
         {
-            Debug.Log("OnCollisionExit");
+            // Debug.Log("OnCollisionExit");
         }
 
         #endregion
@@ -441,7 +466,7 @@ namespace Luna.Core.Locomotion.Character
             if (direction.magnitude > .01f)
                 lastDirection = DirectionToIndex(direction);
 
-            animator.SetFloat("Direction", lastDirection);
+            _animator.SetFloat("Direction", lastDirection);
         }
 
         //this function converts a Vector2 direction to an index to a slice around a circle

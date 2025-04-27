@@ -3,6 +3,7 @@
 #pragma warning disable CS0067 // Event is never used
 
 using Cysharp.Threading.Tasks;
+using Luna.Extensions.Unity;
 using UnityEngine;
 
 namespace Luna.Core.Animation
@@ -27,6 +28,8 @@ namespace Luna.Core.Animation
         public event AnimationStateDelegate OnAnimationTransitionOutStartEvent;
         public event AnimationStateDelegate OnAnimationTransitionOutEndEvent;
         
+        public Animator Animator { get; private set; }
+        
         public abstract void OnAnimationStart(Animator animator, AnimatorStateInfo stateInfo, int layerIndex);
         public abstract void OnAnimationExit(Animator animator, AnimatorStateInfo stateInfo, int layerIndex);
         public abstract void OnAnimationEnd(Animator animator, AnimatorStateInfo stateInfo, int layerIndex);
@@ -45,6 +48,9 @@ namespace Luna.Core.Animation
         
         private void _OnAnimationStart(Animator animator, AnimatorStateInfo stateInfo, int layerIndex)
         {
+            // Debug.Log($"Animation Start: {animator.GetCurrentStateName(layerIndex)} {layerIndex} {this.ToString()}");
+            if (Animator == null) Animator = animator;
+            
             OnAnimationStart(animator, stateInfo, layerIndex);
             OnAnimationStartEvent?.Invoke(this, animator, stateInfo, layerIndex);
         }
@@ -67,7 +73,7 @@ namespace Luna.Core.Animation
             OnAnimationFinishEvent?.Invoke(this, animator, stateInfo, layerIndex);
         }
         
-        // Called every frame_ when the animation is playing.
+        // Called every frame when the animation is playing.
         private void _OnAnimationUpdate(Animator animator, AnimatorStateInfo stateInfo, int layerIndex)
         {
             OnAnimationUpdate(animator, stateInfo, layerIndex);
@@ -160,7 +166,7 @@ namespace Luna.Core.Animation
                 _isTransitioning = false;
             }
             
-            progress = stateInfo.normalizedTime;
+            progress = stateInfo.normalizedTime + 0.001f;
             
             // When animation is fully played.
             if (progress >= 1f)
@@ -170,11 +176,13 @@ namespace Luna.Core.Animation
             
         }
         
+        // public sealed override void OnStateMachineEnter(Animator animator, int stateMachinePathHash) {}
+        // public sealed override void OnStateMachineExit(Animator animator, int stateMachinePathHash) {}
+        
         
         public sealed override void OnStateUpdate(Animator animator, AnimatorStateInfo stateInfo, int layerIndex) {}
         public sealed override void OnStateIK(Animator animator, AnimatorStateInfo stateInfo, int layerIndex) {}
-        // public sealed override void OnStateMachineEnter(Animator animator, int stateMachinePathHash) {}
-        // public sealed override void OnStateMachineExit(Animator animator, int stateMachinePathHash) {}
+
 
         protected enum AnimationState
         {

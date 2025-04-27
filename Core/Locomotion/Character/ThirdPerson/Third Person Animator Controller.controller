@@ -3228,9 +3228,6 @@ AnimatorStateMachine:
     m_State: {fileID: 1972024857428169487}
     m_Position: {x: 1300, y: 200, z: 0}
   - serializedVersion: 1
-    m_State: {fileID: 9083453750534680488}
-    m_Position: {x: 1050, y: 130, z: 0}
-  - serializedVersion: 1
     m_State: {fileID: -6043336982365672719}
     m_Position: {x: 340, y: 180, z: 0}
   - serializedVersion: 1
@@ -3238,7 +3235,7 @@ AnimatorStateMachine:
     m_Position: {x: 1040, y: 210, z: 0}
   - serializedVersion: 1
     m_State: {fileID: -519242598615597821}
-    m_Position: {x: 1075, y: 275, z: 0}
+    m_Position: {x: 1110, y: 320, z: 0}
   m_ChildStateMachines:
   - serializedVersion: 1
     m_StateMachine: {fileID: -2412319230062206600}
@@ -3999,32 +3996,6 @@ AnimatorState:
   m_CycleOffsetParameterActive: 0
   m_TimeParameterActive: 0
   m_Motion: {fileID: 7400000, guid: f47b3cc97b101dd4290a41d6a2d57bb9, type: 2}
-  m_Tag: 
-  m_SpeedParameter: 
-  m_MirrorParameter: 
-  m_CycleOffsetParameter: 
-  m_TimeParameter: 
---- !u!1102 &9083453750534680488
-AnimatorState:
-  serializedVersion: 6
-  m_ObjectHideFlags: 1
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_Name: Ani_Avatar_Girl_Fishing_End
-  m_Speed: 1
-  m_CycleOffset: 0
-  m_Transitions: []
-  m_StateMachineBehaviours: []
-  m_Position: {x: 50, y: 50, z: 0}
-  m_IKOnFeet: 0
-  m_WriteDefaultValues: 1
-  m_Mirror: 0
-  m_SpeedParameterActive: 0
-  m_MirrorParameterActive: 0
-  m_CycleOffsetParameterActive: 0
-  m_TimeParameterActive: 0
-  m_Motion: {fileID: 7400000, guid: e6bab97215c61504a9137e47d90ea60f, type: 2}
   m_Tag: 
   m_SpeedParameter: 
   m_MirrorParameter: 

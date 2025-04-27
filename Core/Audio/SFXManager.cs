@@ -36,6 +36,7 @@ namespace Luna
             Object.DontDestroyOnLoad(soundManagerObject);
         }
         
+        // Play one-shot audio clip with default volume scale of 1.0f
         public static void Play(AudioClip clip)
         {
             Play(clip, 1.0f);
