@@ -18,6 +18,7 @@ namespace Luna
         public event Action<T> onLoaded;                // Triggered when the asset is loaded.
         public event Action<float> onProgress;          // A callback that receives the loading progress (0-1).
         public event Action<DownloadStatus> onDownload; // A callback that receives the download progress (0-1) for remote assets. If the asset is local, this event will be triggered once with parameter progress 1.
+        public event Action<Exception> onError;
         
         protected string address;
         protected AsyncOperationHandle<T> handle;
@@ -48,6 +49,7 @@ namespace Luna
             else handle = Assets.LoadHandle<T>(address);
 
             TrackProgress();
+            TrackError();
             
             return await handle.Task;
         }
@@ -58,6 +60,7 @@ namespace Luna
             await UniTask.Yield(PlayerLoopTiming.PostLateUpdate);
             handle = ((AsyncOperationHandle)Addressables.LoadSceneAsync(address, loadSceneMode)).Convert<T>();
             TrackProgress();
+            TrackError();
         }
         
         // Unload asset asynchronously
@@ -85,6 +88,17 @@ namespace Luna
             }
 
             onProgress?.Invoke(1);
+        }
+        
+        private async void TrackError()
+        {
+            await handle.Task;
+            
+            if (handle.Status == AsyncOperationStatus.Failed)
+            {
+                onError?.Invoke(handle.OperationException);
+                Debug.LogError($"[Asset] Failed to load asset: {handle.OperationException}");
+            }
         }
 
         // Load asset synchronously
