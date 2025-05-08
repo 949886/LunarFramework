@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using DG.Tweening;
 using Luna.Extensions;
 using UnityEngine;
+using UnityEngine.Audio;
 using Object = UnityEngine.Object;
 
 namespace Luna
@@ -27,6 +28,19 @@ namespace Luna
                     audioSource.volume = value;
             }
         }
+        
+        public static AudioMixerGroup Mixer
+        {
+            get => sfxAudioSource.outputAudioMixerGroup;
+            set
+            {
+                sfxAudioSource.outputAudioMixerGroup = value;
+                foreach (var audioSource in audioSources.Values)
+                    if (audioSource.outputAudioMixerGroup == null)
+                        audioSource.outputAudioMixerGroup = value;
+            }
+        }
+        
 
         [RuntimeInitializeOnLoadMethod]
         static void Initialize()
@@ -59,12 +73,8 @@ namespace Luna
         {
             if (!audioSources.ContainsKey(clip))
             {
-                var audioSource = soundManagerObject.AddComponent<AudioSource>();
-                audioSource.clip = clip;
-                audioSource.loop = true;
-                audioSource.volume = Volume;
+                var audioSource = GetAudioSource(clip);
                 audioSource.Play();
-                audioSources[clip] = audioSource;
             }
         }
         
@@ -73,11 +83,7 @@ namespace Luna
             var audioSource = audioSources.GetValueOrDefault(clip);
             if (audioSource == null)
             {
-                audioSource = soundManagerObject.AddComponent<AudioSource>();
-                audioSource.clip = clip;
-                audioSource.loop = false;
-                audioSource.volume = Volume;
-                audioSources[clip] = audioSource;
+                audioSource = GetAudioSource(clip);
             }
 
             while (audioSources.ContainsKey(clip) && audioSource != null)
@@ -92,13 +98,8 @@ namespace Luna
         {
             if (audioSources.ContainsKey(clip))
                 return;
-            
-            var audioSource = soundManagerObject.AddComponent<AudioSource>();
-            audioSource.clip = clip;
-            audioSource.loop = false;
-            audioSource.volume = Volume;
-            audioSources[clip] = audioSource;
-            
+
+            var audioSource = GetAudioSource(clip);
             while (loop && audioSources.ContainsKey(clip) && audioSource != null) 
             {
                 var delay = UnityEngine.Random.Range(interval.min, interval.max);
@@ -151,6 +152,21 @@ namespace Luna
         public static void SetVolume(float volume, float duration = 0.5f)
         {
             DOTween.To(() => Volume, x => Volume = x, volume, duration);
+        }
+
+        private static AudioSource GetAudioSource(AudioClip clip)
+        {
+            if (audioSources.ContainsKey(clip))
+                return audioSources[clip];
+
+            var audioSource = soundManagerObject.AddComponent<AudioSource>();
+            audioSource.clip = clip;
+            audioSource.loop = false;
+            audioSource.volume = Volume;
+            if (Mixer != null)
+                audioSource.outputAudioMixerGroup = Mixer;
+            audioSources[clip] = audioSource;
+            return audioSource;
         }
     }   
 }

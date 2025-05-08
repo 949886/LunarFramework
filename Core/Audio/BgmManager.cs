@@ -7,6 +7,7 @@ using Cysharp.Threading.Tasks;
 using DG.Tweening;
 using Luna.Extensions;
 using UnityEngine;
+using UnityEngine.Audio;
 
 #if USE_ADDRESSABLES
 using UnityEngine.AddressableAssets;
@@ -25,7 +26,13 @@ namespace Luna
             set => audioSource.volume = value;
         }
         
-        public static int HistoryLimit { get; set; } = 10;
+        public static AudioMixerGroup Mixer
+        {
+            get => audioSource.outputAudioMixerGroup;
+            set => audioSource.outputAudioMixerGroup = value;
+        }
+        
+        // public static int HistoryLimit { get; set; } = 10;
         
         public static AudioClip CurrentBgm => audioSource.clip;
         
