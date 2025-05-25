@@ -74,6 +74,7 @@ namespace Luna
             if (!audioSources.ContainsKey(clip))
             {
                 var audioSource = GetAudioSource(clip);
+                audioSource.loop = true;
                 audioSource.Play();
             }
         }

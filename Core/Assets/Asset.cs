@@ -40,10 +40,8 @@ namespace Luna
         
         // Load asset asynchronously
         // Example: var prefab = await new Asset<GameObject>("path/to/prefab").Load();
-        public async Task<T> Load()
+        public Task<T> Load()
         {
-            await UniTask.Yield(PlayerLoopTiming.PostLateUpdate);
-
             if (typeof(T) == typeof(SceneInstance))
                 handle = ((AsyncOperationHandle)Addressables.LoadSceneAsync(address)).Convert<T>();
             else handle = Assets.LoadHandle<T>(address);
@@ -51,13 +49,12 @@ namespace Luna
             TrackProgress();
             TrackError();
             
-            return await handle.Task;
+            return handle.Task;
         }
 
-        public async void Load(LoadSceneMode loadSceneMode)
+        public void Load(LoadSceneMode loadSceneMode)
         {
             Debug.Assert(typeof(T) == typeof(SceneInstance), "Load with LoadSceneMode is only available for SceneInstance.");
-            await UniTask.Yield(PlayerLoopTiming.PostLateUpdate);
             handle = ((AsyncOperationHandle)Addressables.LoadSceneAsync(address, loadSceneMode)).Convert<T>();
             TrackProgress();
             TrackError();
