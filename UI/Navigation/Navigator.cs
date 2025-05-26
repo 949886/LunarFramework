@@ -20,7 +20,7 @@ namespace Luna.UI.Navigation
         
         
         // Reference to the root canvas. If not found, a new canvas will be created.
-        public Canvas canvas; 
+        public Canvas canvas;
         // The root widget of the navigator
         public GameObject rootWidget; 
         
@@ -38,7 +38,20 @@ namespace Luna.UI.Navigation
         
         private bool _isDontDestroyOnLoad = false;
         
-        
+        public static GameObject RootWidget
+        {
+            get => Instance.rootWidget;
+            set
+            {
+                if (Instance.rootWidget == null)
+                {
+                    Instance.rootWidget = value;
+                    var widget = value.GetComponent<Widget>() ?? value.AddComponent<Widget>();
+                    Instance._widgetStack.Push(widget);
+                }
+                else Debug.LogWarning("[Navigator] Root widget is already set. Use a different instance of Navigator if you need multiple root widgets.");
+            }
+        }
         public Widget TopWidget => _widgetStack.Peek();
         
         public Route PreviousRoute => _routeStack.Count > 1 ? _routeStack.Peek() : null;
@@ -49,7 +62,7 @@ namespace Luna.UI.Navigation
         
         
         // Load the Navigator instance on startup if it doesn't exist
-        [RuntimeInitializeOnLoadMethod]
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
         private static void InitializeRootNavigator()
         {
             if (Instance == null)
@@ -122,8 +135,7 @@ namespace Luna.UI.Navigation
                     _widgetStack.Push(widget);
                 }
                 else Push(rootWidget);
-            } 
-            
+            }
         }
 
         private void Update()
@@ -143,7 +155,11 @@ namespace Luna.UI.Navigation
                 navigator.gameObject.SetActive(true);
                 Instance = navigator;
             }
-                
+        }
+        
+        public void Destroy()
+        {
+            Destroy(gameObject);
         }
         
         public static Task<dynamic> Push(Widget widget, Action callback = null)
@@ -274,7 +290,7 @@ namespace Luna.UI.Navigation
             return Instance.PreviousRoute?.To as T;
         }
 
-        protected Task<dynamic> _Push(Widget widget, Action callback = null)
+        internal Task<dynamic> _Push(Widget widget, Action callback = null)
         {
             if (_widgetStack.Count > 0)
                 _widgetStack.Peek().SetNaviActive(false);
@@ -287,7 +303,7 @@ namespace Luna.UI.Navigation
             route.OnPush();
             _routeStack.Push(route);
             
-            widget.Active = true;
+            widget.SetNaviActive(true);
             widget.transform.SetParent(canvas.transform, false);
             
             // Executing the callback.
@@ -296,7 +312,7 @@ namespace Luna.UI.Navigation
             return route.Popped;
         }
         
-        protected Task<dynamic> _Push(GameObject widgetPrefab, Action<GameObject> callback = null)
+        internal Task<dynamic> _Push(GameObject widgetPrefab, Action<GameObject> callback = null)
         {
             if (_widgetStack.Count > 0)
                 _widgetStack.Peek().SetNaviActive(false);
@@ -330,7 +346,7 @@ namespace Luna.UI.Navigation
         
         
 #if USE_ADDRESSABLES && !DISABLE_ADDRESSABLE_NAVIGATION
-        protected async Task<dynamic> _Push<T>(Route<T> route = default, bool keepSelectionOnPop = true, bool hidePrevious = true) where T : Widget
+        internal async Task<dynamic> _Push<T>(Route<T> route = default, bool keepSelectionOnPop = true, bool hidePrevious = true) where T : Widget
         {
             if (_widgetStack.Count > 0 && hidePrevious)
                 _widgetStack.Peek().SetNaviActive(false);
@@ -368,7 +384,7 @@ namespace Luna.UI.Navigation
                 
             // Setting game object active.
             // Widget will execute Awake methods.
-            widget.Active = true;
+            widget.SetNaviActive(true);
 
             // Executing the callback.
             route.callback?.Invoke(widget);
@@ -386,7 +402,7 @@ namespace Luna.UI.Navigation
             return result;
         }
 #else // USE SCRIPTABLE OBJECT
-        protected Task<dynamic> _Push<T>(Route<T> route = default, bool keepSelectionOnPop = true, bool hidePrevious = true) where T : Widget
+        internal Task<dynamic> _Push<T>(Route<T> route = default, bool keepSelectionOnPop = true, bool hidePrevious = true) where T : Widget
         {
             if (_widgetStack.Count > 0 && hidePrevious)
                 _widgetStack.Peek().SetNaviActive(false);
@@ -419,7 +435,7 @@ namespace Luna.UI.Navigation
         }
 #endif
         
-        protected Task<dynamic> _PushReplacement<T>(Action<T> callback = null) where T : Widget
+        internal Task<dynamic> _PushReplacement<T>(Action<T> callback = null) where T : Widget
         {
             if (_widgetStack.Count > 0)
             {
@@ -434,7 +450,7 @@ namespace Luna.UI.Navigation
             return task;
         }
 
-        protected void _Pop<T>(T result = default)
+        internal void _Pop<T>(T result = default)
         {
             if (_widgetStack.Count > 1)
             {
@@ -463,7 +479,7 @@ namespace Luna.UI.Navigation
             }
         }
 
-        protected void _PopToRoot<T>(T result = default)
+        internal void _PopToRoot<T>(T result = default)
         {
             while (_widgetStack.Count > 1)
             {
@@ -492,7 +508,7 @@ namespace Luna.UI.Navigation
             }
         }
         
-        protected void _PopUntil<T, U>(U result = default) where T : Widget
+        internal void _PopUntil<T, U>(U result = default) where T : Widget
         {
             while (_widgetStack.Count > 1)
             {
@@ -528,6 +544,21 @@ namespace Luna.UI.Navigation
             CanvasGroup,    // Use `alpha` & `interactable` of CanvasGroup to deactivate the widget
             Canvas 
         }
+    }
+
+    public static class NavigatorExtensions
+    {
+        public static Task<dynamic> Push(this Navigator navigator, Widget widget, Action callback = null) => navigator._Push(widget, callback);
+        public static Task<dynamic> Push(this Navigator navigator, GameObject widgetPrefab, Action<GameObject> callback = null) => navigator._Push(widgetPrefab, callback);
+        public static Task<dynamic> Push<T>(this Navigator navigator, Action<T> callback = null) where T : Widget => navigator._Push<T>(callback);
+        public static Task<dynamic> Push<T>(this Navigator navigator, bool keepSelectionOnPop, Action<T> callback = null) where T : Widget => navigator._Push<T>(callback, keepSelectionOnPop);
+        public static Task<dynamic> PushReplacement<T>(this Navigator navigator, Action<T> callback = null) where T : Widget => navigator._PushReplacement(callback);
+        public static void Pop(this Navigator navigator) => navigator._Pop(0);
+        public static void Pop<T>(this Navigator navigator, T result = default) => navigator._Pop(result);
+        public static void PopToRoot(this Navigator navigator) => navigator._PopToRoot(0);
+        public static void PopToRoot<T>(this Navigator navigator, T result = default) => navigator._PopToRoot(result);
+        public static void PopUntil<T>(this Navigator navigator) where T : Widget => navigator._PopUntil<T, int>(0);
+        public static void PopUntil<T, U>(this Navigator navigator, U result = default) where T : Widget => navigator._PopUntil<T, U>(result);
     }
 }
 
