@@ -283,6 +283,29 @@ public class PreloadingExample : MonoBehaviour
 }
 ```
 
+### Asset
+
+The `Asset<T>` class is a generic class that represents an asset in Unity. It can be used to load assets from the Resources folder or from the Addressables system.
+
+```csharp
+Asset<SceneInstance> asset = new("Assets/Game/World/Teyvat/Mondstadt.unity");
+asset.onProgress += (progress) => {
+    Debug.Log($"[Assets] Loading {asset.Address}: {progress * 100}%");
+};
+asset.onDownload += status => {
+    Debug.Log($"[Assets] Downloading {asset.Address}: {status.Percent * 100}%");
+};
+asset.onError += (error) => {
+    Debug.LogError($"[Assets] Error loading {asset.Address}: {error}");
+};
+SceneInstance scene = await asset.Load(LoadSceneMode.Additive);
+```
+
+>[!NOTE] 
+> If you want to load a scene, you should use the `SceneInstance` type as the generic type parameter.  
+> If you use `Load()` method to load a scene asset, it will load the scene asynchronously with `LoadSceneMode.Single` mode by default.
+
+
 
 ## Event
 

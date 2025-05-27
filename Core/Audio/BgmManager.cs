@@ -37,7 +37,7 @@ namespace Luna
         public static AudioClip CurrentBgm => audioSource.clip;
         
 
-        [RuntimeInitializeOnLoadMethod]
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
         static void Initialize()
         {
             GameObject soundManagerObject = new GameObject("BGM Manager");

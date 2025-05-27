@@ -42,7 +42,7 @@ namespace Luna
         }
         
 
-        [RuntimeInitializeOnLoadMethod]
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
         static void Initialize()
         {
             soundManagerObject = new GameObject("SFX Manager");
