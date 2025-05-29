@@ -1,12 +1,17 @@
+// // Created by LunarEclipse on 2025-05-29 17:05.
+
 #if USE_UGUI
 
+using Luna.UI.Navigation;
+using Luna.Utils;
+using UnityEditor;
 using UnityEditor.UI.Extensions;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace UnityEditor.UI
+namespace Luna.UI.Editor
 {
-    public class UIMenuOptions: Editor
+    public class UIMenuOptions
     {
         #region UGUI
 
@@ -47,6 +52,25 @@ namespace UnityEditor.UI
         }
 
         #endregion
+
+
+        [MenuItem("GameObject/UI Widget/Navigator", false, 100)]
+        public static void AddNavigator(MenuCommand menuCommand)
+        {
+            var navigator = new GameObject("UI Navigator").AddComponent<Navigator>();
+            navigator.canvas = Object.FindObjectOfType<Canvas>()?.rootCanvas;
+            navigator.rootWidget = Object.FindObjectOfType<Widget>();
+            Selection.activeObject = navigator.gameObject;
+        }
+        
+        [MenuItem("GameObject/UI Widget/Loading Indicator", false, 200)]
+        public static void AddLoadingIndicator(MenuCommand menuCommand)
+        {
+            var go = EditorUtils.InstantiatePrefab(new GUID("8d8ff971562e09242a7328fe57647c0b"), menuCommand);
+            go.name = "Circular Loading Indicator";
+            EditorGuiUtils.PlaceUIElement(go, menuCommand);
+            Selection.activeObject = go;
+        }
     }
 }
 

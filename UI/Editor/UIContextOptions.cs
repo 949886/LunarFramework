@@ -2,12 +2,13 @@
 
 using System;
 using System.Linq;
+using Luna.Extensions;
 using Luna.Utils;
 using UnityEditor;
 using UnityEngine;
 using MonoScript = UnityEditor.MonoScript;
 
-namespace Luna.Extensions
+namespace Luna.UI.Editor
 {
     public class UIContextOptions
     {

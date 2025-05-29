@@ -42,9 +42,9 @@ namespace Luna.Utils
 
             GameObject go = Object.Instantiate(prefab);	
             // GameObjectUtility.SetParentAndAlign(go, menuCommand.context as GameObject);
-            EditorGuiUtils.PlaceUIElement(go, menuCommand);
+            // EditorGuiUtils.PlaceUIElement(go, menuCommand);
             Undo.RegisterCreatedObjectUndo(go, "Create " + go.name);
-            Selection.activeObject = go;
+            // Selection.activeObject = go;
             return go;
         }
         

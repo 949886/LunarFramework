@@ -62,17 +62,17 @@ namespace Luna.UI.Navigation
         
         
         // Load the Navigator instance on startup if it doesn't exist
-        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
-        private static void InitializeRootNavigator()
-        {
-            if (Instance == null)
-            {
-                GameObject navigator = new GameObject("UI Navigator");
-                Instance = navigator.AddComponent<Navigator>();
-                DontDestroyOnLoad(navigator);
-                Instance._isDontDestroyOnLoad = true;
-            }
-        }
+        // [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
+        // private static void InitializeRootNavigator()
+        // {
+        //     if (Instance == null)
+        //     {
+        //         GameObject navigator = new GameObject("UI Navigator");
+        //         Instance = navigator.AddComponent<Navigator>();
+        //         DontDestroyOnLoad(navigator);
+        //         Instance._isDontDestroyOnLoad = true;
+        //     }
+        // }
 
         public static Navigator Create(GameObject rootWidget)
         {

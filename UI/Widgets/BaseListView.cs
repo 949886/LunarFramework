@@ -7,7 +7,7 @@ using UnityEngine.UI;
 namespace Luna.UI
 {
     [RequireComponent(typeof(ScrollRect))]
-    public class BaseListView :  Widget
+    public abstract class BaseListView : Widget
     {
         public ListSnapMode snapMode = ListSnapMode.End;
         
