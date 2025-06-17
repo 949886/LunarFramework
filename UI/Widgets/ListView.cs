@@ -5,10 +5,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Cysharp.Threading.Tasks;
+using DG.Tweening;
 using Luna.Extensions;
 using Luna.Extensions.Unity;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.Serialization;
 using UnityEngine.UI;
 
 namespace Luna.UI
@@ -50,7 +52,7 @@ namespace Luna.UI
             }
         }
         
-        public int itemCount;
+        [HideInInspector] public int itemCount => Data.Count;
 
 
         public int FirstVisibleIndex { get; private set; }
@@ -61,7 +63,7 @@ namespace Luna.UI
         public T cellPrefab;
 
         public bool snapToCellWhenSelected = true;
-        public bool selectFirstCellOnEnable = true;
+        public bool alwaysSelectFirstCell = true;
         public bool selectFirstCellOnReload = true;
         public bool keepSelectionOnReload = true;
 
@@ -87,6 +89,9 @@ namespace Luna.UI
 
         private bool _initialized;
         private bool _selected;
+        
+        public U SelectedData => Data[SelectedIndex];
+        public T SelectedCell => cells[SelectedIndex];
         
         public bool Initialized => _initialized;
         
@@ -121,8 +126,7 @@ namespace Luna.UI
             onCellCreated += OnCellCreated;
 
             _mask = GetComponent<Mask>();
-            _mask.showMaskGraphic = false;
-
+            // _mask.showMaskGraphic = false;
             _maskImage = _mask.GetComponent<Image>();
 
             cellPrefab.GetComponent<RectTransform>().pivot = new Vector2(0, 1);
@@ -148,36 +152,50 @@ namespace Luna.UI
                 // var fitter = content.AddComponent<ContentSizeFitter>();
                 // fitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
             }
-        }
-        
-        protected void OnEnable()
-        {
-            if (selectFirstCellOnEnable && cells.Count > 0)
+            else
             {
-                // Select first cell
-                var firstCell = cells.First();
-                if (firstCell != null)
-                {
-                    // await UniTask.NextFrame();
-                    firstCell.Select();
-                }
+                var rectTransform = _scrollRect.content.GetComponent<RectTransform>();
+                rectTransform.SetParent(transform, false);
+                rectTransform.anchorMin = new Vector2(0, 1);
+                rectTransform.anchorMax = Vector2.one;
+                rectTransform.sizeDelta = new Vector2(0, 0);
+                rectTransform.pivot = new Vector2(0.5f, 1);
+                rectTransform.anchoredPosition = Vector2.zero;
+                rectTransform.localScale = Vector3.one;
+                
+                var contentSizeFitter = _scrollRect.content.GetComponent<ContentSizeFitter>();
+                if (contentSizeFitter != null) contentSizeFitter.enabled = false;
             }
         }
+        
+        // protected void OnEnable()
+        // {
+        //     if (alwaysSelectFirstCell && cells.Count > 0)
+        //     {
+        //         // Select first cell
+        //         var firstCell = cells.First();
+        //         if (firstCell != null)
+        //         {
+        //             // await UniTask.NextFrame();
+        //             firstCell.Select();
+        //         }
+        //     }
+        // }
 
         protected virtual async void Start()
         {
             if (Data != null && Data.Count > 0)
             {
-                itemCount = Data.Count;
+                // itemCount = Data.Count;
                 _itemBuilder ??= i => Data[i.Mod(itemCount)];
             }
             
-            Reload();
+            Initialize();
             isDirty = false;
             _initialized = true;
         }
         
-        public void Reload()
+        public void Initialize()
         {
             _initialized = false;
             
@@ -192,8 +210,7 @@ namespace Luna.UI
 
             cells.Clear();
 
-            _scrollRect.content.sizeDelta =
-                new Vector2(0, MathF.Min(itemCount * cellPrefab.GetComponent<RectTransform>().rect.height, 50000000f)); // Precision issue
+            _scrollRect.content.sizeDelta = new Vector2(0, 50000000f); // Precision issue
 
             // Create new cells
             CreateCells();
@@ -212,6 +229,12 @@ namespace Luna.UI
             }
         }
 
+        public void Reload()
+        {
+            // itemCount = Data.Count;
+            UpdateVisibleItems();
+        }
+        
         public async Task ReloadAsync()
         {
             _initialized = false;
@@ -233,8 +256,11 @@ namespace Luna.UI
                 var newCell = Instantiate(cellPrefab, content, false);
                 cells.Add(newCell);
                 newCell.gameObject.SetActive(true);
+                newCell.name = "Cell " + i;
                 newCell.Index = i;
                 newCell.Data = ItemBuilder(i);
+                newCell.RectTransform.anchorMin = new Vector2(newCell.RectTransform.anchorMin.x, 1);
+                newCell.RectTransform.anchorMax = new Vector2(newCell.RectTransform.anchorMax.x, 1);
                 newCell.OnCellSelected += _OnCellSelected;
                 newCell.OnCellDeselected += _OnCellDeselected;
                 newCell.OnCellSubmitted += _OnCellSubmitted;
@@ -256,6 +282,41 @@ namespace Luna.UI
                     EventSystem.current.SetSelectedGameObject(newCell.gameObject);
             }
         }
+        
+        private T GetReuseableCellAt(int index) 
+        {
+            if (index < 0 || index >= cells.Count)
+                return null;
+
+            var cell = cells[index.Mod(cells.Count)];
+            if (cell.Index != index)
+            {
+                cell.Index = index;
+                cell.Data = ItemBuilder(index);
+                onCellLoaded?.Invoke(index, cell);
+            }
+
+            return cell;
+        }
+        
+        private Vector2 GetScrollPositionAt(int index)
+        {
+            var cellHeight = cellPrefab.GetComponent<RectTransform>().rect.height;
+            var scrollY = index * cellHeight - ((RectTransform)_scrollRect.transform).rect.height;
+            if (scrollY < 0) scrollY = 0;
+            return new Vector2(0, scrollY);
+        }
+        
+        private void ScrollTo(int index, float animDuration = 0f)
+        {
+            var targetPosition = GetScrollPositionAt(index);
+            if (_scrollRect.content.anchoredPosition == targetPosition)
+                return;
+
+            if (animDuration <= 0)
+                _scrollRect.content.anchoredPosition = targetPosition;
+            else DOTween.To(() => ScrollOffset, v => ScrollOffset = v, targetPosition, animDuration);
+        }
 
         private void OnScrollValueChanged(Vector2 normalizedPosition)
         {
@@ -268,7 +329,7 @@ namespace Luna.UI
             var cellHeight = cellPrefab.GetComponent<RectTransform>().rect.height;
             var scrollHeight = _scrollRect.GetComponent<RectTransform>().rect.height;
             var scrollY = content.anchoredPosition.y;
-            FirstVisibleIndex = Mathf.Clamp(Mathf.RoundToInt(scrollY / cellHeight), 0,itemCount - 1);
+            FirstVisibleIndex = Mathf.Clamp(Mathf.FloorToInt(scrollY / cellHeight), 0,itemCount - 1);
             LastVisibleIndex = Mathf.Clamp(Mathf.RoundToInt((scrollY + scrollHeight) / cellHeight), 0, itemCount - 1);
 
             // Debug.Log($"{scrollY} First: {FirstVisibleIndex}, Last: {LastVisibleIndex}");
@@ -276,29 +337,45 @@ namespace Luna.UI
             for (int i = FirstVisibleIndex; i <= LastVisibleIndex; i++)
             {
                 var cell = cells[i.Mod(cells.Count)];
-                if (cell.Index != i)
-                {
-                    cell.Index = i;
-                    cell.Data = ItemBuilder(i);
-                    cell.GetComponent<RectTransform>().anchoredPosition = new Vector2(0, -i * cellHeight);
-                    onCellLoaded?.Invoke(i, cell);
-                }
+                cell.Index = i;
+                cell.Data = ItemBuilder(i);
+                cell.GetComponent<RectTransform>().anchoredPosition = new Vector2(0, -i * cellHeight);
+                onCellLoaded?.Invoke(i, cell);
                 OnCellScrolling(i, cell, scrollY + (i - FirstVisibleIndex) * cellHeight);
             }
         }
+        
 
-        public override void SnapTo(RectTransform target)
+        // public override void SnapTo(RectTransform target)
+        // {
+        //     
+        // }
+        
+        public void Select(int index)
         {
-            
+            FocusOnCell(index);
         }
 
-        public void FocusOnCell(int index)
+        public async void FocusOnCell(int index)
         {
             if (cells.Count == 0) return;
 
+            ScrollTo(index);
+            UpdateVisibleItems();
+            // await UniTask.NextFrame();
             var cell = cells[index.Mod(cells.Count)];
             cell.OnSelect(null);
             EventSystem.current.SetSelectedGameObject(cell.gameObject);
+        }
+
+        public void Remove(int index)
+        {
+            if (index < 0 || index >= Data.Count) return;
+
+            Data.RemoveAt(index);
+            
+            var focusIndex = index < Data.Count ? index : Data.Count - 1;
+            FocusOnCell(focusIndex);
         }
 
         private void _OnCellSubmitted(int index, ListViewCell<U> listViewCell)
