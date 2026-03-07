@@ -19,88 +19,105 @@ public class SpriteSheetExporter : MonoBehaviour
         List<Sprite> sprites = new List<Sprite>();
         foreach (var obj in selectedObjects) if (obj is Sprite s) sprites.Add(s);
 
-        // 1. 计算每个 Sprite 相对于其 Pivot 的四个方向的跨度
-        // 这样可以找到一个足够大的网格，容纳所有 Sprite 的偏移
-        float maxLeft = 0, maxRight = 0, maxUp = 0, maxDown = 0;
+        // 1. 预处理：确保所有原图都是可读且未压缩的
+        foreach (var s in sprites) PrepareTextureForRead(s.texture);
 
+        // 2. 计算 Pivot 对齐后的网格尺寸
+        float maxLeft = 0, maxRight = 0, maxUp = 0, maxDown = 0;
         foreach (var s in sprites)
         {
-            // pivot 是像素单位的偏移（相对于 Sprite 矩形左下角）
-            Vector2 pivot = s.pivot; 
+            Vector2 pivot = s.pivot;
             Rect r = s.rect;
-
             maxLeft = Mathf.Max(maxLeft, pivot.x);
             maxRight = Mathf.Max(maxRight, r.width - pivot.x);
             maxDown = Mathf.Max(maxDown, pivot.y);
             maxUp = Mathf.Max(maxUp, r.height - pivot.y);
         }
 
-        // 2. 确定统一网格单元尺寸（基于 Pivot 对齐后的总宽高）
         int maxWidth = Mathf.CeilToInt(maxLeft + maxRight);
         int maxHeight = Mathf.CeilToInt(maxUp + maxDown);
-
         int columns = 8;
         int rows = Mathf.CeilToInt((float)sprites.Count / columns);
-        int sheetWidth = columns * maxWidth;
-        int sheetHeight = rows * maxHeight;
 
-        Texture2D spriteSheet = new Texture2D(sheetWidth, sheetHeight, TextureFormat.RGBA32, false);
+        // 3. 创建贴图（使用 RGBA32 保证无损颜色）
+        Texture2D spriteSheet = new Texture2D(columns * maxWidth, rows * maxHeight, TextureFormat.RGBA32, false);
         
-        // 初始化透明
-        Color[] clearColors = new Color[sheetWidth * sheetHeight];
-        for (int i = 0; i < clearColors.Length; i++) clearColors[i] = Color.clear;
+        // 彻底清理背景为纯透明
+        Color[] clearColors = new Color[spriteSheet.width * spriteSheet.height];
+        for (int i = 0; i < clearColors.Length; i++) clearColors[i] = new Color(0,0,0,0);
         spriteSheet.SetPixels(clearColors);
 
-        // 3. 逐个写入，基于 Pivot 对齐
+        // 4. 写入像素
         for (int i = 0; i < sprites.Count; i++)
         {
-            Sprite sprite = sprites[i];
-            EnsureTextureIsReadable(sprite.texture);
-
-            int sw = Mathf.FloorToInt(sprite.rect.width);
-            int sh = Mathf.FloorToInt(sprite.rect.height);
+            Sprite s = sprites[i];
+            int sw = Mathf.FloorToInt(s.rect.width);
+            int sh = Mathf.FloorToInt(s.rect.height);
             
-            // 提取像素
-            Color[] spritePixels = sprite.texture.GetPixels(
-                Mathf.FloorToInt(sprite.rect.x), 
-                Mathf.FloorToInt(sprite.rect.y), 
+            Color[] pixels = s.texture.GetPixels(
+                Mathf.FloorToInt(s.rect.x), 
+                Mathf.FloorToInt(s.rect.y), 
                 sw, sh
             );
 
-            // --- 核心对齐逻辑 ---
-            // 统一的 Pivot 在网格内部的相对坐标应该是 (maxLeft, maxDown)
-            // 当前 Sprite 的 Pivot 在自己矩形内的相对坐标是 (sprite.pivot.x, sprite.pivot.y)
-            int offsetX = Mathf.RoundToInt(maxLeft - sprite.pivot.x);
-            int offsetY = Mathf.RoundToInt(maxDown - sprite.pivot.y);
+            int offsetX = Mathf.RoundToInt(maxLeft - s.pivot.x);
+            int offsetY = Mathf.RoundToInt(maxDown - s.pivot.y);
+            int cellX = (i % columns) * maxWidth;
+            int cellY = (rows - 1 - (i / columns)) * maxHeight;
 
-            // 计算该网格在大图中的左下角起点
-            int cellXOrigin = (i % columns) * maxWidth;
-            int cellYOrigin = (rows - 1 - (i / columns)) * maxHeight;
-
-            // 写入像素（考虑 Pivot 偏移）
-            spriteSheet.SetPixels(cellXOrigin + offsetX, cellYOrigin + offsetY, sw, sh, spritePixels);
+            spriteSheet.SetPixels(cellX + offsetX, cellY + offsetY, sw, sh, pixels);
         }
 
         spriteSheet.Apply();
 
-        // 4. 保存
+        // 5. 保存并自动优化设置
         byte[] bytes = spriteSheet.EncodeToPNG();
         string path = AssetDatabase.GetAssetPath(selectedObjects[0]);
-        string savePath = Path.Combine(Path.GetDirectoryName(path), "Aligned_SpriteSheet.png");
+        string savePath = Path.Combine(Path.GetDirectoryName(path), "SpriteSheet.png");
         File.WriteAllBytes(savePath, bytes);
         AssetDatabase.Refresh();
 
-        EditorUtility.DisplayDialog("成功", $"已完成 Pivot 对齐导出！\n网格尺寸: {maxWidth}x{maxHeight}", "OK");
+        // 自动将导出的图片设为无损
+        ApplyImportSettings(savePath);
+
+        float pivotX = maxLeft / maxWidth;
+        float pivotY = maxDown / maxHeight;
+        
+        EditorUtility.DisplayDialog("导出成功", 
+            $"网格大小: {maxWidth}x{maxHeight}\n" +
+            $"建议 Pivot 比例: X:{pivotX:F3}, Y:{pivotY:F3}\n" +
+            "已自动应用无损导入设置。", "OK");
     }
 
-    private static void EnsureTextureIsReadable(Texture2D tex)
+    private static void PrepareTextureForRead(Texture2D tex)
     {
         string path = AssetDatabase.GetAssetPath(tex);
         TextureImporter importer = AssetImporter.GetAtPath(path) as TextureImporter;
-        if (importer != null && !importer.isReadable)
-        {
-            importer.isReadable = true;
-            importer.SaveAndReimport();
+        if (importer == null) return;
+
+        bool changed = false;
+        if (!importer.isReadable) { importer.isReadable = true; changed = true; }
+        // 强制设为 Uncompressed (无压缩) 以避免噪点
+        if (importer.textureCompression != TextureImporterCompression.Uncompressed) 
+        { 
+            importer.textureCompression = TextureImporterCompression.Uncompressed; 
+            changed = true; 
         }
+
+        if (changed) importer.SaveAndReimport();
+    }
+
+    private static void ApplyImportSettings(string path)
+    {
+        TextureImporter importer = AssetImporter.GetAtPath(path) as TextureImporter;
+        if (importer == null) return;
+
+        importer.textureType = TextureImporterType.Sprite;
+        importer.spriteImportMode = SpriteImportMode.Multiple;
+        importer.filterMode = FilterMode.Point; // 像素风格不模糊
+        importer.textureCompression = TextureImporterCompression.Uncompressed; // 结果不压缩
+        importer.alphaIsTransparency = true;
+        
+        importer.SaveAndReimport();
     }
 }
