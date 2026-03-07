@@ -67,7 +67,7 @@ public class AnimationClipToSpriteSheet : MonoBehaviour
         // 4. 保存为 PNG
         byte[] bytes = sheet.EncodeToPNG();
         string path = AssetDatabase.GetAssetPath(clip);
-        string savePath = Path.Combine(Path.GetDirectoryName(path), clip.name + "_Sheet.png");
+        string savePath = Path.Combine(Path.GetDirectoryName(path), clip.name + ".png");
         File.WriteAllBytes(savePath, bytes);
         
         AssetDatabase.Refresh();
