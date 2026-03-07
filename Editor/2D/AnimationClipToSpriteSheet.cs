@@ -15,49 +15,87 @@ public class AnimationClipToSpriteSheet : MonoBehaviour
         List<Sprite> sprites = GetSpritesFromClip(clip);
         if (sprites.Count == 0) return;
 
-        // 1. 找到所有帧中的最大尺寸，确保格子够大
-        int maxW = 0;
-        int maxH = 0;
+        // 1. 预扫描：计算基于 Pivot 对齐所需的格子大小
+        // 我们需要找到 Pivot 距离各个边界的最大距离
+        float maxLeft = 0;
+        float maxRight = 0;
+        float maxTop = 0;
+        float maxBottom = 0;
+
         foreach (var s in sprites)
         {
-            maxW = Mathf.Max(maxW, Mathf.RoundToInt(s.rect.width));
-            maxH = Mathf.Max(maxH, Mathf.RoundToInt(s.rect.height));
+            // s.rect 是 Sprite 在原始贴图上的裁剪区域 (像素)
+            // s.pivot 是 Pivot 在 s.rect 坐标系下的位置 (像素, 左下角为 0,0)
+
+            // 计算 Pivot 距离 Sprite 四边的像素距离
+            float distLeft = s.pivot.x;
+            float distRight = s.rect.width - s.pivot.x;
+            float distBottom = s.pivot.y;
+            float distTop = s.rect.height - s.pivot.y;
+
+            maxLeft = Mathf.Max(maxLeft, distLeft);
+            maxRight = Mathf.Max(maxRight, distRight);
+            maxBottom = Mathf.Max(maxBottom, distBottom);
+            maxTop = Mathf.Max(maxTop, distTop);
         }
 
+        // 最终格子的尺寸 (像素)
+        int cellW = Mathf.CeilToInt(maxLeft + maxRight);
+        int cellH = Mathf.CeilToInt(maxBottom + maxTop);
+
+        // 统一的 Pivot 在格子中的相对位置
+        int targetPivotX = Mathf.CeilToInt(maxLeft);
+        int targetPivotY = Mathf.CeilToInt(maxBottom);
+
+        // 2. 计算大图布局
         int columns = 8;
         int rows = Mathf.CeilToInt((float)sprites.Count / columns);
 
-        // 2. 创建大图
-        Texture2D sheet = new Texture2D(maxW * columns, maxH * rows, TextureFormat.RGBA32, false);
-        // 初始化全透明背景
+        Texture2D sheet = new Texture2D(cellW * columns, cellH * rows, TextureFormat.RGBA32, false);
+        
+        // 初始化透明背景
         Color[] clearPixels = new Color[sheet.width * sheet.height];
         for (int i = 0; i < clearPixels.Length; i++) clearPixels[i] = Color.clear;
         sheet.SetPixels(clearPixels);
 
-        // 3. 逐帧安全绘制
+        // 3. 逐帧安全绘制 (对齐 Pivot)
         for (int i = 0; i < sprites.Count; i++)
         {
             Sprite s = sprites[i];
+            if (s.texture == null) continue;
+
             EnsureTextureReadable(s.texture);
 
-            // 获取该帧实际像素尺寸
+            // 获取该帧实际像素尺寸 (可能因 Tight Mesh 而小于格子)
             int frameW = Mathf.RoundToInt(s.textureRect.width);
             int frameH = Mathf.RoundToInt(s.textureRect.height);
+            
+            // 注意：GetObjectReferenceCurve 拿到的可能是未裁剪的 Sprite，
+            // 确保使用 textureRect 来获取实际有像素的区域。
             Color[] pixels = s.texture.GetPixels((int)s.textureRect.x, (int)s.textureRect.y, frameW, frameH);
 
-            // 计算格子位置 (Unity 左下角为 0,0)
+            // 计算格子在 SpriteSheet 中的左下角起始位置 (Unity 坐标系)
             int col = i % columns;
             int row = rows - 1 - (i / columns); 
-            
-            int cellStartX = col * maxW;
-            int cellStartY = row * maxH;
+            int cellStartX = col * cellW;
+            int cellStartY = row * cellH;
 
-            // 居中计算：将当前帧放在格子的中心
-            int offsetX = (maxW - frameW) / 2;
-            int offsetY = (maxH - frameH) / 2;
+            // 核心修复：计算 Pivot 对齐所需的偏移
+            // 我们希望该帧的 Pivot (s.pivot) 重合到格子的虚拟 Pivot (targetPivotX, targetPivotY)
+            int offsetX = targetPivotX - Mathf.RoundToInt(s.pivot.x);
+            int offsetY = targetPivotY - Mathf.RoundToInt(s.pivot.y);
 
             // 写入像素
-            sheet.SetPixels(cellStartX + offsetX, cellStartY + offsetY, frameW, frameH, pixels);
+            try
+            {
+                sheet.SetPixels(cellStartX + offsetX, cellStartY + offsetY, frameW, frameH, pixels);
+            }
+            catch (System.ArgumentException e)
+            {
+                // 如果仍然报错，通常是因为 s.pivot 的计算和 s.textureRect 的不一致导致的边界溢出。
+                // 这是一个兜底，确保脚本不崩溃，并提示信息。
+                Debug.LogError($"[SpriteSheet] 帧 {i} 绘制失败，通常由不规则的 Pivot 和裁剪引起。\nError: {e.Message}");
+            }
         }
 
         sheet.Apply();
@@ -65,11 +103,11 @@ public class AnimationClipToSpriteSheet : MonoBehaviour
         // 4. 保存
         byte[] bytes = sheet.EncodeToPNG();
         string path = AssetDatabase.GetAssetPath(clip);
-        string savePath = Path.Combine(Path.GetDirectoryName(path), clip.name + "_Sheet.png");
+        string savePath = Path.Combine(Path.GetDirectoryName(path), clip.name + "_AlignedSheet.png");
         File.WriteAllBytes(savePath, bytes);
         
         AssetDatabase.Refresh();
-        Debug.Log($"<color=cyan>[SpriteSheet]</color> 导出成功：{savePath} (格子大小: {maxW}x{maxH})");
+        Debug.Log($"<color=green>[SpriteSheet]</color> 导出成功 (Pivot已对齐): {savePath}\n格子大小: {cellW}x{cellH}, 统一Pivot: ({targetPivotX},{targetPivotY})");
     }
 
     private static void EnsureTextureReadable(Texture2D tex)
@@ -95,8 +133,9 @@ public class AnimationClipToSpriteSheet : MonoBehaviour
             {
                 if (frame.value is Sprite s)
                 {
-                    // 这里不建议去重，因为动画可能反复调用同一帧，保持序列完整更好
-                    sprites.Add(s);
+                    // 动画切片中可能包含引用为空的帧，或者重复的帧，这里需要过滤
+                    if(s != null)
+                        sprites.Add(s);
                 }
             }
         }
