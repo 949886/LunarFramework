@@ -1,0 +1,9 @@
+{
+    "name": "Luna.Awaitable",
+    "rootNamespace": "UnityEngine",
+    "references": [],
+    "autoReferenced": true,
+    "defineConstraints": [
+        "!UNITY_2023_1_OR_NEWER"
+    ]
+}
