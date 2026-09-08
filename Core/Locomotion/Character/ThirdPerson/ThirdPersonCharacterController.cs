@@ -53,6 +53,8 @@ namespace Luna.Core.Locomotion.Character
             inputs = new ThirdPersonInput();
             inputs.Gameplay.AddCallbacks(this);
             
+            inputs.Gameplay.Look.performed += ctx => OnFire(ctx);
+            
             _rigidbody = GetComponent<Rigidbody>();
             _rigidbody.freezeRotation = true;
             _capsuleCollider = GetComponent<CapsuleCollider>();
