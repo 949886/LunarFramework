@@ -1,9 +1,6 @@
 #if USE_TEXTMESHPRO
 
 using System;
-#if !UNITY_2023_1_OR_NEWER
-using Cysharp.Threading.Tasks;
-#endif
 using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -41,11 +38,7 @@ namespace Luna.Extensions.UGUI
         {
             base.OnSelect(eventData);
 
-#if UNITY_2023_1_OR_NEWER
             await Awaitable.EndOfFrameAsync();
-#else
-            await UniTask.Yield(PlayerLoopTiming.PostLateUpdate);
-#endif
             
             if (!editOnFocus)
                 DeactivateInputField();

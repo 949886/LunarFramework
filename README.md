@@ -10,6 +10,7 @@ Lunar Framework is a set of tools and patterns for Unity3D development. It's des
 ## Table of Contents
 
 - [Installation](#installation)
+- [Async Support](#async-support)
 - [UI](#UI)
   - [UI Navigation](#navigation)
 - [Asset Management](#asset-management)
@@ -27,6 +28,12 @@ Lunar Framework is a set of tools and patterns for Unity3D development. It's des
 1. Open the Unity Package Manager by selecting `Window` > `Package Manager`.
 2. Click the `+` button in the top-left corner and select `Add package from git URL...`.
 3. Enter the git URL `https://github.com/949886/LunarFramework.git` and click `Add`.
+
+## Async Support
+
+Lunar Framework uses `UnityEngine.Awaitable` throughout. Unity 2023.1 and newer use Unity's native implementation; Unity 2021.3 and 2022.3 use the bundled `Luna.Awaitable` compatibility assembly. No additional async package is required.
+
+See [Awaitable usage and compatibility](Documentation~/awaitable.md) and the [validation runner](Tests~/Awaitable/README.md).
 
 <!--
 
@@ -96,8 +103,8 @@ public void OnBlueButtonClick()
 {
     Navigator.Push<RouletteGameView>(async (view) => {
         // Basically, you can pass data to the widget by setting corresponding properties directly.
-        // You can also use UniTask to pass data at the next frame if you want to do something after the widget is enabled.
-        /* await UniTask.NextFrame(); */
+        // You can also use Awaitable to pass data at the next frame if you want to do something after the widget is enabled.
+        /* await Awaitable.NextFrameAsync(); */
         view.RouletteData = Data;
     });
 }
@@ -268,7 +275,7 @@ public class PreloadingExample : MonoBehaviour
     private async void Start()
     {
         // Show loading indicator before necessary assets are loaded
-        await UniTask.Yield(PlayerLoopTiming.PreLateUpdate);
+        await Awaitable.EndOfFrameAsync();
         Navigator.ShowModal<CircularLoadingIndicator>();
         
         // Load bgm
@@ -391,7 +398,7 @@ private async void Shoot(GameObject bulletPrefab)
   rigidbody.AddForce(bulletObject.transform.forward * muzzleVelocity, ForceMode.Acceleration);
   
   // turn off after a few seconds
-  await UniTask.Delay(TimeSpan.FromSeconds(3));
+  await Awaitable.WaitForSecondsAsync(3f);
   bulletObject.SetActive(false); // <- **Important** set inactive to return to the pool
 }
 ```

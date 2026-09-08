@@ -1,9 +1,7 @@
 // Created by LunarEclipse on 2024-7-7 20:39.
 
 using System;
-#if !UNITY_2023_1_OR_NEWER
-using Cysharp.Threading.Tasks;
-#endif
+using Luna.Extensions.Unity;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.Controls;
@@ -142,19 +140,11 @@ namespace Luna.UI
         private async void DispatchLateInput(InputControl control, InputEvent inputEvent, KeyEvent keyEvent)
         {
             if (this == null) return;
-#if UNITY_2023_1_OR_NEWER
-            var cancellationToken = destroyCancellationToken;
-#else
             var cancellationToken = this.GetCancellationTokenOnDestroy();
-#endif
             try
             {
                 // InputEventPtr memory is only valid during the synchronous input callback.
-#if UNITY_2023_1_OR_NEWER
                 await Awaitable.EndOfFrameAsync(cancellationToken);
-#else
-                await UniTask.Yield(PlayerLoopTiming.LastPostLateUpdate, cancellationToken: cancellationToken);
-#endif
                 if (this == null) return;
                 if (control is KeyControl keyControl)
                     _OnLateKey?.Invoke(keyControl, keyEvent);

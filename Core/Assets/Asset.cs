@@ -2,9 +2,6 @@
 
 using System;
 using System.Threading.Tasks;
-#if !UNITY_2023_1_OR_NEWER
-using Cysharp.Threading.Tasks;
-#endif
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -76,22 +73,14 @@ namespace Luna
             while (!handle.GetDownloadStatus().IsDone)
             {
                 onDownload?.Invoke(handle.GetDownloadStatus());
-#if UNITY_2023_1_OR_NEWER
                 await Awaitable.NextFrameAsync();
-#else
-                await UniTask.Yield();
-#endif
             }
             onDownload?.Invoke(handle.GetDownloadStatus());
                 
             while (!handle.IsDone)
             {
                 onProgress?.Invoke(handle.PercentComplete);
-#if UNITY_2023_1_OR_NEWER
                 await Awaitable.NextFrameAsync();
-#else
-                await UniTask.Yield();
-#endif
             }
 
             onProgress?.Invoke(1);

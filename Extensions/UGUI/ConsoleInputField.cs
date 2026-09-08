@@ -1,9 +1,6 @@
 // Created by LunarEclipse on 2025-01-08
 
 using System;
-#if !UNITY_2023_1_OR_NEWER
-using Cysharp.Threading.Tasks;
-#endif
 using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -48,11 +45,7 @@ namespace Extensions.UGUI
         {
             base.OnSubmit(eventData);
             
-#if UNITY_2023_1_OR_NEWER
             await Awaitable.NextFrameAsync();
-#else
-            await UniTask.NextFrame();
-#endif
             this.Select();
         }
     }

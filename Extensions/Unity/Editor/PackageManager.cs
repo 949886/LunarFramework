@@ -23,7 +23,6 @@ namespace Luna.Editor
         [InitializeOnLoadMethod]
         static void Install()
         {
-            //Add("com.cysharp.unitask", "https://github.com/Cysharp/UniTask.git?path=src/UniTask/Assets/Plugins/UniTask");
         }
         
         public static void Add(string packageId, string url = null)

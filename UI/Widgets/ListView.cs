@@ -4,9 +4,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-#if !UNITY_2023_1_OR_NEWER
-using Cysharp.Threading.Tasks;
-#endif
 using DG.Tweening;
 using Luna.Extensions;
 using Luna.Extensions.Unity;
@@ -178,7 +175,6 @@ namespace Luna.UI
         //         var firstCell = cells.First();
         //         if (firstCell != null)
         //         {
-        //             // await UniTask.NextFrame();
         //             firstCell.Select();
         //         }
         //     }
@@ -240,11 +236,7 @@ namespace Luna.UI
         public async Task ReloadAsync()
         {
             _initialized = false;
-#if UNITY_2023_1_OR_NEWER
             await Awaitable.NextFrameAsync();
-#else
-            await UniTask.Yield(PlayerLoopTiming.PreUpdate);
-#endif
             Reload();
         }
 
@@ -368,7 +360,6 @@ namespace Luna.UI
 
             ScrollTo(index);
             UpdateVisibleItems();
-            // await UniTask.NextFrame();
             var cell = cells[index.Mod(cells.Count)];
             cell.OnSelect(null);
             EventSystem.current.SetSelectedGameObject(cell.gameObject);

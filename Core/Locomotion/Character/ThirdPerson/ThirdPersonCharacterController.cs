@@ -332,13 +332,9 @@ namespace Luna.Core.Locomotion.Character
                     
                     // _playableDirector.Play();
                     // _playableDirector.time = _markers[0].time;
-                    // await UniTask.WaitForSeconds(0.1f); 
-                    // await UniTask.NextFrame(); 
                     
-                    // await UniTask.DelayFrame(5);
                     // animator.SetBool("Attack", false);
                     // Time.timeScale = 0.1f;
-                    // await UniTask.WaitForSeconds(1f); 
                     // Time.timeScale = 1f;
                 }
 

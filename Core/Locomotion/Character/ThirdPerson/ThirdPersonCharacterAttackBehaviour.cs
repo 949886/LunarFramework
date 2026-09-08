@@ -34,7 +34,6 @@ namespace Luna.Core.Locomotion.Character
             
             animator.SetInteger("Attack Index", attackIndex);
             
-            // await UniTask.DelayFrame(2);
             
             animator.SetBool("Attack", false);
             animator.SetBool("Extra Attack", false);

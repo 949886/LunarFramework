@@ -51,8 +51,6 @@ namespace Luna.UI
         //     {
         //         isDirty = true;
         //         if (isActiveAndEnabled)
-        //             await UniTask.Yield();
-        //         // else await UniTask.WaitUntil(() => isActiveAndEnabled);
         //         Build();
         //         isDirty = false;
         //     }
