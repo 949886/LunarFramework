@@ -1,6 +1,5 @@
 // Created by LunarEclipse on 2024-6-21 3:15.
 
-using Cysharp.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -68,7 +67,9 @@ namespace Luna.UI
             var prefab = Load<T>();
             if (prefab == null)
             {
-                var newWidget = new GameObject(typeof(T).Name) { active = active } .AddComponent<T>();
+                var gameObject = new GameObject(typeof(T).Name);
+                gameObject.SetActive(active);
+                var newWidget = gameObject.AddComponent<T>();
                 newWidget.transform.SetParent(parent, false);
                 return newWidget;
             }
@@ -94,7 +95,9 @@ namespace Luna.UI
             }
             
             // Create a new widget.
-            var newWidget = new GameObject(typeof(T).Name) { active = active } .AddComponent<T>();
+            var gameObject = new GameObject(typeof(T).Name);
+            gameObject.SetActive(active);
+            var newWidget = gameObject.AddComponent<T>();
             newWidget.Active = active;
             newWidget.transform.SetParent(parent, false);
             return newWidget;
@@ -112,7 +115,9 @@ namespace Luna.UI
             {
                 if (op.Result == null)
                 {
-                    var newWidget = new GameObject(typeof(T).Name) { active = active } .AddComponent<T>();
+                    var gameObject = new GameObject(typeof(T).Name);
+                    gameObject.SetActive(active);
+                    var newWidget = gameObject.AddComponent<T>();
                     newWidget.transform.SetParent(parent, false);
                     tcs.SetResult(newWidget);
                 }

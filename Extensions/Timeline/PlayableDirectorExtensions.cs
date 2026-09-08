@@ -1,4 +1,7 @@
+#if !UNITY_2023_1_OR_NEWER
 using Cysharp.Threading.Tasks;
+#endif
+using UnityEngine;
 using UnityEngine.Playables;
 
 namespace Extensions.Timeline
@@ -11,7 +14,11 @@ namespace Extensions.Timeline
             var state = director.state;
             if (state != PlayState.Playing)
                 director.Play();        
+#if UNITY_2023_1_OR_NEWER
+            await Awaitable.EndOfFrameAsync();
+#else
             await UniTask.Yield(PlayerLoopTiming.PostLateUpdate);
+#endif
             if (state != PlayState.Playing)
                 director.Stop();
         }

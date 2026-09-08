@@ -3,7 +3,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
+#if !UNITY_2023_1_OR_NEWER
 using Cysharp.Threading.Tasks;
+#endif
 using DG.Tweening;
 using Luna.Extensions;
 using UnityEngine;
@@ -97,7 +99,11 @@ namespace Luna
             foreach (var clip in clips)
             {
                 Play(clip, fadeDuration);
+#if UNITY_2023_1_OR_NEWER
+                await Awaitable.WaitForSecondsAsync(clip.length + fadeDuration);
+#else
                 await UniTask.Delay((int)((clip.length + fadeDuration) * 1000));
+#endif
             }
         }
         
@@ -107,7 +113,11 @@ namespace Luna
             {
                 var clip = clips[Random.Range(0, clips.Count)];
                 Play(clip, fadeDuration);
+#if UNITY_2023_1_OR_NEWER
+                await Awaitable.WaitForSecondsAsync(clip.length + fadeDuration);
+#else
                 await UniTask.Delay((int)((clip.length + fadeDuration) * 1000));
+#endif
             }
         }
         

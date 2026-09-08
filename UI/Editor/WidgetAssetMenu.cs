@@ -10,6 +10,13 @@ using System.Threading.Tasks;
 using UnityEditor.Callbacks;
 using UnityEditor.ProjectWindowCallback;
 using Object = UnityEngine.Object;
+#if UNITY_6000_4_OR_NEWER
+using AssetCreationAction = UnityEditor.ProjectWindowCallback.AssetCreationEndAction;
+using AssetId = UnityEngine.EntityId;
+#else
+using AssetCreationAction = UnityEditor.ProjectWindowCallback.EndNameEditAction;
+using AssetId = System.Int32;
+#endif
 
 public class WidgetAssetMenu : EditorWindow
 {
@@ -29,16 +36,16 @@ public class WidgetAssetMenu : EditorWindow
             var scriptPath = path + "/" + widgetName + ".cs";
 
             // File.WriteAllText(scriptPath, scriptContent);
-            ProjectWindowUtil.StartNameEditingIfProjectWindowExists(0, CreateInstance<OnCreateScript>(), "NewWidget",
+            ProjectWindowUtil.StartNameEditingIfProjectWindowExists(default(AssetId), CreateInstance<OnCreateScript>(), "NewWidget",
                 null, null);
         }
     }
 
-    internal class OnCreateScript : EndNameEditAction
+    internal class OnCreateScript : AssetCreationAction
     {
         private Queue<Action> _actions = new();
 
-        public override void Action(int instanceId, string pathName, string resourceFile)
+        public override void Action(AssetId instanceId, string pathName, string resourceFile)
         {
             if (!pathName.EndsWith(".cs"))
                 pathName += ".cs";
@@ -98,7 +105,7 @@ public class " + fileName + @": Widget
             }
         }
 
-        public override void Cancelled(int instanceId, string pathName, string resourceFile)
+        public override void Cancelled(AssetId instanceId, string pathName, string resourceFile)
         {
             Selection.activeObject = null;
         }

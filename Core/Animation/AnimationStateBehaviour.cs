@@ -2,7 +2,9 @@
 
 #pragma warning disable CS0067 // Event is never used
 
+#if !UNITY_2023_1_OR_NEWER
 using Cysharp.Threading.Tasks;
+#endif
 using Luna.Extensions.Unity;
 using UnityEngine;
 
@@ -120,7 +122,11 @@ namespace Luna.Core.Animation
         {
             if (!_isTransitioning)
                 OnAnimationExit(animator, stateInfo, layerIndex);
+#if UNITY_2023_1_OR_NEWER
+            await Awaitable.NextFrameAsync();
+#else
             await UniTask.DelayFrame(1);
+#endif
             OnAnimationEnd(animator, stateInfo, layerIndex);
             progress = 0f;
         }

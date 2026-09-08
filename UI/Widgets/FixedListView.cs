@@ -4,7 +4,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+#if !UNITY_2023_1_OR_NEWER
 using Cysharp.Threading.Tasks;
+#endif
 using DG.Tweening;
 using Luna.Extensions;
 using Luna.Extensions.Unity;
@@ -125,7 +127,11 @@ namespace Luna.UI
         public async Task ReloadAsync()
         {
             _initialized = false;
+#if UNITY_2023_1_OR_NEWER
+            await Awaitable.NextFrameAsync();
+#else
             await UniTask.Yield(PlayerLoopTiming.PreUpdate);
+#endif
             Reload();
         }
         
@@ -214,7 +220,7 @@ namespace Luna.UI
             FocusOnCell(index, 0);
         }
         
-        public void Remove(int index, bool autoFocus = true)
+        public async void Remove(int index, bool autoFocus = true)
         {
             if (index < cells.Count && index >= 0)
             {
@@ -226,9 +232,15 @@ namespace Luna.UI
                 SelectedIndex = focusIndex;
                 
                 if (autoFocus)
-                    UniTask.NextFrame().ContinueWith(() => {
+                {
+#if UNITY_2023_1_OR_NEWER
+                    await Awaitable.NextFrameAsync();
+#else
+                    await UniTask.NextFrame();
+#endif
+                    if (this != null)
                         FocusOnCell(focusIndex);
-                    });
+                }
             }
         }
         

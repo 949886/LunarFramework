@@ -2,7 +2,9 @@
 
 #if USE_UGUI
 
+#if !UNITY_2023_1_OR_NEWER
 using Cysharp.Threading.Tasks;
+#endif
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
@@ -37,7 +39,11 @@ namespace Luna.Extensions
             if (focusOnEnable) 
                 EventSystem.current.SetSelectedGameObject(gameObject);
 
+#if UNITY_2023_1_OR_NEWER
+            await Awaitable.NextFrameAsync();
+#else
             await UniTask.NextFrame();
+#endif
             _ready = true;
         }
 

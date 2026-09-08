@@ -1,6 +1,9 @@
 // Created by LunarEclipse on 2024-7-7 20:39.
 
+using System;
+#if !UNITY_2023_1_OR_NEWER
 using Cysharp.Threading.Tasks;
+#endif
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.Controls;
@@ -107,7 +110,7 @@ namespace Luna.UI
         }
 
         
-        private async void OnInputEvent(InputEventPtr eventPtr, InputDevice device)
+        private void OnInputEvent(InputEventPtr eventPtr, InputDevice device)
         {
             // Debug.Log(eventPtr);
             if (!eventPtr.IsA<StateEvent>() && !eventPtr.IsA<DeltaStateEvent>())
@@ -119,23 +122,47 @@ namespace Luna.UI
                 // Debug.Log(control.IsPressed());
                 // Debug.Log(control.IsActuated());
 
-                _OnInput?.Invoke(control, control.IsPressed() ? InputEvent.End : InputEvent.Start);
+                var inputEvent = control.IsPressed() ? InputEvent.End : InputEvent.Start;
+                var keyEvent = control.IsPressed() ? KeyEvent.Up : KeyEvent.Down;
+                _OnInput?.Invoke(control, inputEvent);
                 
                 if (control is KeyControl keyControl)
                 {
-                    var result = _OnKey?.Invoke(keyControl, control.IsPressed() ? KeyEvent.Up : KeyEvent.Down);
+                    var result = _OnKey?.Invoke(keyControl, keyEvent);
                     if (result == KeyEventResult.Handled)
                         eventPtr.handled = true;
                 }
                 
                 // Run at the end of the frame.
                 if (_OnLateInput != null || _OnLateKey != null)
-                {   
-                    await UniTask.Yield(PlayerLoopTiming.LastPostLateUpdate, cancellationToken: this.GetCancellationTokenOnDestroy());
-                    if (control is KeyControl keyControl2)
-                        _OnLateKey?.Invoke(keyControl2, control.IsPressed() ? KeyEvent.Up : KeyEvent.Down);
-                    _OnLateInput?.Invoke(control, control.IsPressed() ? InputEvent.End : InputEvent.Start);
-                }
+                    DispatchLateInput(control, inputEvent, keyEvent);
+            }
+        }
+
+        private async void DispatchLateInput(InputControl control, InputEvent inputEvent, KeyEvent keyEvent)
+        {
+            if (this == null) return;
+#if UNITY_2023_1_OR_NEWER
+            var cancellationToken = destroyCancellationToken;
+#else
+            var cancellationToken = this.GetCancellationTokenOnDestroy();
+#endif
+            try
+            {
+                // InputEventPtr memory is only valid during the synchronous input callback.
+#if UNITY_2023_1_OR_NEWER
+                await Awaitable.EndOfFrameAsync(cancellationToken);
+#else
+                await UniTask.Yield(PlayerLoopTiming.LastPostLateUpdate, cancellationToken: cancellationToken);
+#endif
+                if (this == null) return;
+                if (control is KeyControl keyControl)
+                    _OnLateKey?.Invoke(keyControl, keyEvent);
+                _OnLateInput?.Invoke(control, inputEvent);
+            }
+            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+            {
+                // Destroying the widget cancels pending callbacks.
             }
         }
     }

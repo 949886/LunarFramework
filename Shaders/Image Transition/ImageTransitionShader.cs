@@ -2,7 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+#if !UNITY_2023_1_OR_NEWER
 using Cysharp.Threading.Tasks;
+#endif
 using UnityEngine;
 using UnityEngine.Serialization;
 using UnityEngine.UI;
@@ -55,7 +57,11 @@ namespace Modules.Shader
             // _image.sprite = sprite;
             _material.SetTexture(TextureName, sprites[_index].texture);
             _material.SetFloat(LastTimeProperty, Time.time);
+#if UNITY_2023_1_OR_NEWER
+            await Awaitable.WaitForSecondsAsync(duration);
+#else
             await UniTask.Delay(TimeSpan.FromSeconds(duration));
+#endif
             _isPlaying = false;
             _material.SetTexture(BufferName, sprites[_index].texture);
             

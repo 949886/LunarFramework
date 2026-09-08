@@ -1,6 +1,5 @@
 ﻿// Created by LunarEclipse on 2024-01-05 23:04.
 
-using Cysharp.Threading.Tasks;
 using JetBrains.Annotations;
 using Luna.Core.Animation;
 using Luna.Extensions.Unity;
