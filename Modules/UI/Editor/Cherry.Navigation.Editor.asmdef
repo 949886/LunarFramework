@@ -1,0 +1,19 @@
+{
+  "name": "Cherry.Navigation.Editor",
+  "rootNamespace": "",
+  "references": [
+    "Cherry.Navigation",
+    "Unity.ugui"
+  ],
+  "includePlatforms": [
+    "Editor"
+  ],
+  "excludePlatforms": [],
+  "allowUnsafeCode": false,
+  "overrideReferences": false,
+  "precompiledReferences": [],
+  "autoReferenced": true,
+  "defineConstraints": [],
+  "versionDefines": [],
+  "noEngineReferences": false
+}
